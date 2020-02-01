@@ -14,14 +14,15 @@ export default class Ship extends DynamicObject {
         if (Renderer) {
             let renderer = Renderer.getInstance();
             let shipActor = new ShipActor(renderer);
-            let sprite = shipActor.sprite;
-            renderer.sprites[this.id] = sprite;
-            sprite.id = this.id;
-            sprite.position.set(this.position.x, this.position.y);
-            renderer.layer2.addChild(sprite);
+            // let sprite = shipActor.sprite;
+            // renderer.sprites[this.id] = sprite;
+            // sprite.id = this.id;
+            // sprite.position.set(this.position.x, this.position.y);
+            // renderer.layer2.addChild(sprite);
 
             if (gameEngine.isOwnedByPlayer(this)) {
-                renderer.addPlayerShip(sprite);
+                //renderer.addPlayerShip(sprite);
+                renderer.addPlayerShip(this);
             } else {
                 renderer.addOffscreenIndicator(this);
             }
@@ -46,18 +47,18 @@ export default class Ship extends DynamicObject {
             } else {
                 renderer.removeOffscreenIndicator(this);
             }
-            let sprite = renderer.sprites[this.id];
-            if (sprite) {
-                if (sprite.actor) {
-                    // removal "takes time"
-                    sprite.actor.destroy().then(()=>{
-                        delete renderer.sprites[this.id];
-                    });
-                } else {
-                    sprite.destroy();
-                    delete renderer.sprites[this.id];
-                }
-            }
+            // let sprite = renderer.sprites[this.id];
+            // if (sprite) {
+            //     if (sprite.actor) {
+            //         // removal "takes time"
+            //         sprite.actor.destroy().then(()=>{
+            //             delete renderer.sprites[this.id];
+            //         });
+            //     } else {
+            //         sprite.destroy();
+            //         delete renderer.sprites[this.id];
+            //     }
+            // }
         }
     }
 

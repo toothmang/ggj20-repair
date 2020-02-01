@@ -23,25 +23,25 @@ export default class Missile extends DynamicObject {
 
     onAddToWorld(gameEngine) {
         if (Renderer) {
-            let renderer = Renderer.getInstance();
-            let sprite = new PIXI.Sprite(PIXI.loader.resources.missile.texture);
-            renderer.sprites[this.id] = sprite;
-            sprite.width = 81 * 0.5;
-            sprite.height = 46 * 0.5;
-            sprite.anchor.set(0.5, 0.5);
-            sprite.position.set(this.position.x, this.position.y);
-            renderer.layer2.addChild(sprite);
+            // let renderer = Renderer.getInstance();
+            // let sprite = new PIXI.Sprite(PIXI.loader.resources.missile.texture);
+            // renderer.sprites[this.id] = sprite;
+            // sprite.width = 81 * 0.5;
+            // sprite.height = 46 * 0.5;
+            // sprite.anchor.set(0.5, 0.5);
+            // sprite.position.set(this.position.x, this.position.y);
+            // renderer.layer2.addChild(sprite);
         }
     }
 
     onRemoveFromWorld(gameEngine) {
-        if (Renderer) {
-            let renderer = Renderer.getInstance();
-            if (renderer.sprites[this.id]) {
-                renderer.sprites[this.id].destroy();
-                delete renderer.sprites[this.id];
-            }
-        }
+        // if (Renderer) {
+        //     let renderer = Renderer.getInstance();
+        //     if (renderer.sprites[this.id]) {
+        //         renderer.sprites[this.id].destroy();
+        //         delete renderer.sprites[this.id];
+        //     }
+        // }
     }
 
     syncTo(other) {
