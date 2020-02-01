@@ -4,6 +4,7 @@ import SpaaaceRenderer from '../client/SpaaaceRenderer';
 import MobileControls from './MobileControls';
 import Ship from '../common/Ship';
 import Utils from '../common/Utils';
+import GamepadControls from './GamepadControls';
 
 export default class SpaaaceClientEngine extends ClientEngine {
 
@@ -55,6 +56,8 @@ export default class SpaaaceClientEngine extends ClientEngine {
                 this.controls.bindKey('right', 'right', { repeat: true });
                 this.controls.bindKey('up', 'up', { repeat: true } );
                 this.controls.bindKey('space', 'space');
+
+                this.gamepadControls = new GamepadControls(this);
             }
 
         });
