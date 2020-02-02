@@ -20,12 +20,12 @@ export default class Ship extends DynamicObject {
                     // 7 lateral spacing
                     // 8 scale
                     // 9 color
-                    // ship   name            1   2   3   4    5   6      7     8       9
-            new Weapon(this, "standby",       1,  1,  20, 50,  10, 1,     0.0                   ),
-            new Weapon(this, "repeater",   0.05,  1,  5,  30,  10, 0.85,  0.0,  0.7,    0xcdcd22),
-            new Weapon(this, "shotty",      0.8, 16,  8,  25,  10, 0.7,   0.0,  0.5             ),
-            new Weapon(this, "rocky",       1.5,  1,  80, 100, 8,  0.9,   0.0,  3.5,    0xff1212),
-            new Weapon(this, "twin_railgun",  1,  2,  20, 50,  30, 1,     30.0, 1.6,    0x3311ff)
+                    // ship   name              1       2   3   4       5   6      7     8       9
+            new Weapon(this, "standby",         0.25,   1,  20, 50,     10, 1,     0.0                   ),
+            new Weapon(this, "repeater",        0.05,   1,  7,  30,     15, 0.85,  0.0,  0.7,    0xcdcd22),
+            new Weapon(this, "shotty",          0.8,    16, 4,  20,     15, 0.7,   3,    1.5,    0x010101),
+            new Weapon(this, "rocky",           0.5,    2,  80, 45,     40, 0.8,   5,    3.5,    0xff1212),
+            new Weapon(this, "twin_railgun",    1,      2,  20, 50,     30, 1,     30.0, 1.6,    0x3311ff)
         ]
         this.weapon = Math.trunc(Math.random() * this.weapons.length);
         this.lastWeaponChange = new Date();
