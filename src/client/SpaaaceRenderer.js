@@ -88,8 +88,16 @@ export default class SpaaaceRenderer extends Renderer {
 
         this.scene = new THREE.Scene();
 
-        var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.25 );
-        directionalLight.position.set(-10., 10., -100.); // FIXME: Investigate sign flip
+        let lt_spread = 20.0;
+
+        var directionalLight = new THREE.DirectionalLight( 0xff8888, 0.35 );
+        directionalLight.position.set( -lt_spread,  lt_spread, -100.); // FIXME: Investigate sign flip
+        this.scene.add( directionalLight );
+        directionalLight = new THREE.DirectionalLight( 0x8888ff, 0.25 );
+        directionalLight.position.set( -lt_spread, -lt_spread, -100.); // FIXME: Investigate sign flip
+        this.scene.add( directionalLight );
+        directionalLight = new THREE.DirectionalLight( 0x88ff88, 0.30 );
+        directionalLight.position.set(  lt_spread,         0., -100.); // FIXME: Investigate sign flip
         this.scene.add( directionalLight );
 
         var geometry = new THREE.SphereGeometry( this.worldRadius, 128, 64 );
@@ -97,7 +105,7 @@ export default class SpaaaceRenderer extends Renderer {
 
         // var surfaceMaterial = new THREE.MeshBasicMaterial( {color: 0x4444ff} );
         // var edgeMaterial = new THREE.LineBasicMaterial( { color: 0xffffff });
-        var surfaceMaterial = new THREE.MeshPhongMaterial( {color: 0x4444ff, specular: 0x2222aa, shininess: 30, flatShading:true} )
+        var surfaceMaterial = new THREE.MeshPhongMaterial( {color: 0x4444ff, specular: 0x333355, shininess: 60, flatShading:true} )
 
         var worldMesh = new THREE.Mesh( geometry, surfaceMaterial );
         //var worldGrid = new THREE.LineSegments( lineGeometry, edgeMaterial );
