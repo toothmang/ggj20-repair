@@ -24,11 +24,11 @@ export default class Ship extends DynamicObject {
                     //10 spread
                     // ship   name                    1       2   3   4     5   6      7     8       9
             'RB': new Weapon(this, "standby",         0.25,   1,  20, 50,   10, 1,     0.0                   ),
-            'RT': new Weapon(this, "repeater",        0.05,   1,  7,  30,   15, 0.85,  0.0,  0.7,    0xcdcd22),
+            'RT': new Weapon(this, "repeater",        0.15,   1,  7,  30,   15, 0.85,  0.0,  0.7,    0xcdcd22),
             'LT': new Weapon(this, "shotty",          0.8,    16, 4,  20,   15, 0.7,   3,    1.5,    0x010101),
             'LB': new Weapon(this, "twin_railgun",    1,      2,  20, 50,   30, 1,     30.0, 1.6,    0x3311ff),
             'LS': new Weapon(this, "rocky",           0.5,    2,  80, 45,   30, 0.8,   5,    3.5,    0xff1212),
-            'RS': new Weapon(this, "panic_mode",      0.1,    16, 10, 10,   8,  0.0,   0.1,   0.1,   0xffffff, 180)
+            'RS': new Weapon(this, "panic_mode",      0.5,    8,  20, 10,   8,  0.0,   0.1,   0.1,   0xffffff, 180)
         };
         this.pickupEffects = 
                   new Weapon(this, "pickups",         1,      1,  1,  1,    1,  1,     1,    1,      1,        1);
@@ -293,6 +293,8 @@ export default class Ship extends DynamicObject {
             this.fireLoop = this.gameEngine.timer.loop(fireLoopTime, () => {
                 if (this.target && this.distanceToTargetSquared(this.target) < 160000) {
                     let choices = Object.keys(shipWeapons);
+                    choices = choices.filter(e => e != 'LT');
+                    choices = choices.filter(e => e != 'RS');
                     //console.log(choices);
                     var randButton = choices[Utils.randInt(0, choices.length)];
                     //console.log("firing " + randButton);
