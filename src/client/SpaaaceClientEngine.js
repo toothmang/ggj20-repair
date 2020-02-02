@@ -22,7 +22,8 @@ export default class SpaaaceClientEngine extends ClientEngine {
             if (obj instanceof Ship && this.gameEngine.isOwnedByPlayer(obj)) {
                 document.body.classList.add('lostGame');
                 document.querySelector('#tryAgain').disabled = false;
-                this.isIdle = true;
+
+                setTimeout(() => { this.isIdle = true; }, 1000);
             }
         });
 
