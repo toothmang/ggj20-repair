@@ -1,6 +1,8 @@
 import { ServerEngine } from 'lance-gg';
+import Ship from '../common/Ship';
 const nameGenerator = require('./NameGenerator');
 const NUM_BOTS = 10;
+const FRIENDLY_RATE = 0.25;
 
 export default class SpaaaceServerEngine extends ServerEngine {
 
@@ -9,18 +11,44 @@ export default class SpaaaceServerEngine extends ServerEngine {
         this.scoreData = {};
     }
 
+    spawnlevel() {
+        for (let x = 0; x < NUM_BOTS; x++) this.makeBot();
+    }
+
     // when the game starts, create robot spaceships, and register
     // on missile-hit events
     start() {
         super.start();
 
-        for (let x = 0; x < NUM_BOTS; x++) this.makeBot();
+        this.spawnlevel();
 
         this.gameEngine.on('missileHit', e => {
             // Reduce health of hit ship
-            e.ship.health -= e.missile.damage;
 
-            if (e.ship.health <= 0) {
+            // Find out if the hit ship is a player or not
+            var hitShip = e.ship;
+            let friendly = false;
+            // If they're human, see if they got hit by a good bot
+            if (!hitShip.isBot) {
+                if (!e.missile.fromBot || e.missile.fromGoodBot) {
+                    hitShip.health += e.missile.damage;
+                    friendly = true;
+                }
+            }
+            else {
+                // If the hit ship is a bot, see if they're good and got hit by a human
+                if (hitShip.isGoodBot) {
+                    if (e.missile.playerId > 0 || (e.missile.fromBot && e.missle.fromGoodBot)) {
+                        hitShip.health += e.missile.damage;
+                        friendly = true;
+                    }
+                }
+            }
+            if (!friendly) {
+                hitShip.health -= e.missile.damage;
+            }
+
+            if (hitShip.health <= 0) {
                 // add kills
                 if (this.scoreData[e.missile.ownerId]) this.scoreData[e.missile.ownerId].kills++;
 
@@ -30,13 +58,18 @@ export default class SpaaaceServerEngine extends ServerEngine {
 
                 console.log(`ship killed: ${e.ship.toString()}`);
                 this.gameEngine.removeObjectFromWorld(e.ship.id);
-                if (e.ship.isBot) {
+                if (hitShip.isBot) {
                     setTimeout(() => this.makeBot(), 5000);
                 }
             }
-            else {
-                console.log(`ship damage: ${e.ship.health.toString()}`);
-            }
+            // else {
+            //     if (friendly) {
+            //         console.log(`ship healz: ${hitShip.health.toString()}`);    
+            //     }
+            //     else {
+            //         console.log(`ship damage: ${hitShip.health.toString()}`);
+            //     }
+            // }
         });
     }
 
@@ -76,7 +109,7 @@ export default class SpaaaceServerEngine extends ServerEngine {
 
     // create a robot spaceship
     makeBot() {
-        let bot = this.gameEngine.makeShip(0);
+        let bot = this.gameEngine.makeShip(0, Math.random() < FRIENDLY_RATE ? true : false);
         bot.attachAI();
 
         this.scoreData[bot.id] = {

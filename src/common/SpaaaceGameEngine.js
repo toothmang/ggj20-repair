@@ -124,7 +124,7 @@ export default class SpaaaceGameEngine extends GameEngine {
     };
 
     // Makes a new ship, places it randomly and adds it to the game world
-    makeShip(playerId) {
+    makeShip(playerId, goodBot = false) {
         let newShipX = Math.floor(Math.random()*(this.worldSettings.width-200)) + 200;
         let newShipY = Math.floor(Math.random()*(this.worldSettings.height-200)) + 200;
 
@@ -133,6 +133,13 @@ export default class SpaaaceGameEngine extends GameEngine {
         });
 
         ship.playerId = playerId;
+        if (ship.playerId == 0) {
+            ship.isBot = true;
+            ship.isGoodBot = goodBot;
+        }
+        else {
+            ship.isBot = ship.isGoodBot = false;
+        }
         this.addObjectToWorld(ship);
         console.log(`ship added: ${ship.toString()}`);
 
@@ -163,6 +170,8 @@ export default class SpaaaceGameEngine extends GameEngine {
             missile.angle = playerShip.angle + accuracyPenalty;
             missile.playerId = playerShip.playerId;
             missile.ownerId = playerShip.id;
+            missile.fromBot = playerShip.isBot;
+            missile.fromGoodBot = playerShip.isGoodBot;
             missile.inputId = inputId; // this enables usage of the missile shadow object
             missile.velocity.x += Math.cos(missile.angle * (Math.PI / 180)) * weapon.missileSpeed;
             missile.velocity.y += Math.sin(missile.angle * (Math.PI / 180)) * weapon.missileSpeed;

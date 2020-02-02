@@ -15,7 +15,7 @@ export default class Weapon  {
         this.missileLife = missileLife;
         this.missileSpeed = missileSpeed;
         this.accuracy = accuracy;
-        this.lateral = lateral
+        this.lateral = lateral;
         this.scale = scale;
         this.color = color;
 

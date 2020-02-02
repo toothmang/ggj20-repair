@@ -6,6 +6,7 @@ export default class Missile extends DynamicObject {
         super(gameEngine, options, props);
         this.damage = 1;
         this.scale = 1;
+        this.color = 0xffff44;
     }
 
     // this is what allows usage of shadow object with input-created objects (missiles)

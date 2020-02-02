@@ -32,10 +32,14 @@ export default class Ship extends DynamicObject {
     }
 
     get health() { return this._health; }
-    set health(h) { this._health = h; this.refreshHealthBar(); }
+    set health(h) { 
+        this._health = h; 
+        if (this._health > this._maxHealth) {
+            this._health = this._maxHealth;
+        }
+        this.refreshHealthBar(); }
 
     get maxSpeed() { return 7.0; }
-
 
     equippedWeapon() {
         return this.weapons[this.weapon];
@@ -46,16 +50,19 @@ export default class Ship extends DynamicObject {
     }
 
     onAddToWorld(gameEngine) {
+        this.color = 0xff0011;
+        if (gameEngine.isOwnedByPlayer(this)) this.color = 0x44aa44;
+        else if (!this.isBot) this.color = 0x22ffff;
+
+        if (this.isGoodBot) this.color = 0x1100ff;
+
+        
         if (Renderer) {
             let renderer = Renderer.getInstance();
             let shipActor = new ShipActor(renderer);
 
-            var color = 0xff4444;
-            if (gameEngine.isOwnedByPlayer(this)) color = 0x44aa44;
-            else if (this.playerId > 0) color = 0x22ffff;
-
             var geometry = new THREE.ConeGeometry( 0.5, 2.0, 10, 1, false );
-            var surfaceMaterial = new THREE.MeshPhongMaterial( {color: color, specular: 0xaaaaff, shininess: 50, flatShading:true} )
+            var surfaceMaterial = new THREE.MeshPhongMaterial( {color: this.color, specular: 0xaaaaff, shininess: 50, flatShading:true} )
 
             var model = new THREE.Mesh( geometry, surfaceMaterial );
             model.rotation.fromArray([0., 0., -Math.PI/2.])
@@ -105,7 +112,7 @@ export default class Ship extends DynamicObject {
             // var points = [ new THREE.Vector2( hb_radius, 0. ), new THREE.Vector2( hb_radius + hb_width, 0.) ];
             var healthpct = this._health / this._maxHealth;
             var healthbarGeom = new THREE.LatheBufferGeometry( points, 64, -Math.PI*7/4, healthpct * Math.PI*3/2 );
-            var healthbarMaterial = new THREE.MeshBasicMaterial( {color: 0xff0000} );
+            var healthbarMaterial = new THREE.MeshBasicMaterial( {color: this.color} );
             var healthbar = new THREE.Mesh( healthbarGeom, healthbarMaterial );
             healthbar.rotation.fromArray([0., -Math.PI/2., -Math.PI/2.]);
             this.healthbar = healthbar;
@@ -169,7 +176,9 @@ export default class Ship extends DynamicObject {
         return Object.assign({
             showThrust: { type: BaseTypes.TYPES.INT32 },
             health: {type: BaseTypes.TYPES.INT32 },
-            weapon: {type: BaseTypes.TYPES.INT32 }
+            weapon: {type: BaseTypes.TYPES.INT32 },
+            isBot: {type:BaseTypes.TYPES.INT8},
+            isGoodBot: {type:BaseTypes.TYPES.INT8},
         }, super.netScheme);
     }
 
@@ -180,6 +189,10 @@ export default class Ship extends DynamicObject {
     syncTo(other) {
         super.syncTo(other);
         this.showThrust = other.showThrust;
+        this.health = other.health;
+        this.weapon = other.weapon;
+        this.isBot = other.isBot;
+        this.isGoodBot = other.isGoodBot;
     }
 
 
@@ -187,11 +200,6 @@ export default class Ship extends DynamicObject {
     }
 
     attachAI() {
-        this.isBot = true;
-
-        this.weapon = Utils.randInt(0, this.weapons.length);
-        //this.weapon = 1;
-
         this.onPreStep = () => {
             this.steer();
         };
@@ -230,8 +238,18 @@ export default class Ship extends DynamicObject {
         let closestDistance2 = Infinity;
         for (let objId of Object.keys(this.gameEngine.world.objects)) {
             let obj = this.gameEngine.world.objects[objId];
-            if (obj != this && obj.playerId > 0) {
-                let distance2 = this.distanceToTargetSquared(obj);
+            if (obj != this) {
+                let distance2 = Infinity;
+                // If it's a good bot, steer towards the closest target of
+                // either players or bad bots - just not other good bots
+                if (this.isGoodBot && obj.isGoodBot == false) {
+                    distance2 = this.distanceToTargetSquared(obj);
+                }
+                // If it's not a good bot, steer towards closest player or
+                // good bot
+                else if (obj.playerId > 0 || obj.isGoodBot) {
+                    distance2 = this.distanceToTargetSquared(obj);
+                }
                 if (distance2 < closestDistance2) {
                     closestTarget = obj;
                     closestDistance2 = distance2;
