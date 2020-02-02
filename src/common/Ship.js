@@ -8,7 +8,7 @@ export default class Ship extends DynamicObject {
     constructor(gameEngine, options, props) {
         super(gameEngine, options, props);
         this.showThrust = 0;
-        this._maxHealth = 100;
+        this._maxHealth = (options && options["maxhealth"]) || 100;
         this._health = this._maxHealth;
         this.weapons = {
                     // 1 shotRate
@@ -34,8 +34,8 @@ export default class Ship extends DynamicObject {
     }
 
     get health() { return this._health; }
-    set health(h) { 
-        this._health = h; 
+    set health(h) {
+        this._health = h;
         if (this._health > this._maxHealth) {
             this._health = this._maxHealth;
         }
@@ -54,19 +54,20 @@ export default class Ship extends DynamicObject {
 
         if (this.isGoodBot) this.color = 0x1100ff;
 
-        
+
         if (Renderer) {
             let renderer = Renderer.getInstance();
             let shipActor = new ShipActor(renderer);
 
-            var geometry = new THREE.ConeGeometry( 0.5, 2.0, 10, 1, false );
+            if (this.isCarrier) {
+                var geometry = new THREE.DodecahedronGeometry( 1.9, 0. );
+            } else {
+                var geometry = new THREE.ConeGeometry( 0.5, 2.0, 10, 1, false );
+            }
             var surfaceMaterial = new THREE.MeshPhongMaterial( {color: this.color, specular: 0xaaaaff, shininess: 50, flatShading:true} )
 
             var model = new THREE.Mesh( geometry, surfaceMaterial );
             model.rotation.fromArray([0., 0., -Math.PI/2.])
-
-
-
 
             var group = new THREE.Group();
             group.add( model );
@@ -109,6 +110,12 @@ export default class Ship extends DynamicObject {
 
             // var points = [ new THREE.Vector2( hb_radius, 0. ), new THREE.Vector2( hb_radius + hb_width, 0.) ];
             var healthpct = this._health / this._maxHealth;
+
+            // let r = 0xff * (1. - healthpct);
+            // let g = 0xff * (     healthpct);
+            // let b = 0; //0xff * (0.25 - Math.abs(0.25 - 0.5 * healthpct));
+            // let color = (r << 16) + (g << 8) + b;
+
             var healthbarGeom = new THREE.LatheBufferGeometry( points, 64, -Math.PI*7/4, healthpct * Math.PI*3/2 );
             var healthbarMaterial = new THREE.MeshBasicMaterial( {color: this.color} );
             var healthbar = new THREE.Mesh( healthbarGeom, healthbarMaterial );
@@ -177,6 +184,7 @@ export default class Ship extends DynamicObject {
             weapon: {type: BaseTypes.TYPES.INT32 },
             isBot: {type:BaseTypes.TYPES.INT8},
             isGoodBot: {type:BaseTypes.TYPES.INT8},
+            isCarrier: {type:BaseTypes.TYPES.INT8},
         }, super.netScheme);
     }
 
@@ -191,6 +199,7 @@ export default class Ship extends DynamicObject {
         this.weapon = other.weapon;
         this.isBot = other.isBot;
         this.isGoodBot = other.isGoodBot;
+        this.isCarrier = other.isCarrier;
     }
 
 
@@ -204,27 +213,35 @@ export default class Ship extends DynamicObject {
 
 
         var shipWeapons = this.weapons;
-        
+
 
         this.gameEngine.on('preStep', this.onPreStep);
 
-        let fireLoopTime = Math.round(25);
-        
-        this.fireLoop = this.gameEngine.timer.loop(fireLoopTime, () => {
-            if (this.target && this.distanceToTargetSquared(this.target) < 160000) {
-                let choices = Object.keys(shipWeapons);
-                //console.log(choices);
-                var randButton = choices[Utils.randInt(0, choices.length)];
-                //console.log("firing " + randButton);
-                var weapon = shipWeapons[randButton];
-                let nowish = new Date();
-                var secDiff = (nowish - weapon.lastFired) / 1000.0;
-                if (secDiff >= weapon.shotRate) {
-                    this.gameEngine.makeMissile(this, null, weapon);
-                    weapon.lastFired = nowish;
+        if (!this.isCarrier) {
+            let fireLoopTime = Math.round(25);
+
+            this.fireLoop = this.gameEngine.timer.loop(fireLoopTime, () => {
+                if (this.target && this.distanceToTargetSquared(this.target) < 160000) {
+                    let choices = Object.keys(shipWeapons);
+                    //console.log(choices);
+                    var randButton = choices[Utils.randInt(0, choices.length)];
+                    //console.log("firing " + randButton);
+                    var weapon = shipWeapons[randButton];
+                    let nowish = new Date();
+                    var secDiff = (nowish - weapon.lastFired) / 1000.0;
+                    if (secDiff >= weapon.shotRate) {
+                        this.gameEngine.makeMissile(this, null, weapon);
+                        weapon.lastFired = nowish;
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            let fireLoopTime = 500;
+
+            this.fireLoop = this.gameEngine.timer.loop(fireLoopTime, () => {
+                this.gameEngine.makeShip(0, false, this.position).attachAI();
+            });
+        }
     }
 
     shortestVector(p1, p2, wrapDist) {

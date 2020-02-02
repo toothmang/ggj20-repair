@@ -124,21 +124,30 @@ export default class SpaaaceGameEngine extends GameEngine {
     };
 
     // Makes a new ship, places it randomly and adds it to the game world
-    makeShip(playerId, goodBot = false) {
-        let newShipX = Math.floor(Math.random()*(this.worldSettings.width-200)) + 200;
-        let newShipY = Math.floor(Math.random()*(this.worldSettings.height-200)) + 200;
+    makeShip(playerId, goodBot = false, position) {
+        if (!position) {
+            let newShipX = Math.floor(Math.random()*(this.worldSettings.width-200)) + 100;
+            let newShipY = Math.floor(Math.random()*(this.worldSettings.height-200)) + 100;
+
+            var pos = new TwoVector(newShipX, newShipY);
+        } else {
+            var pos = new TwoVector(position.x, position.y);
+        }
+
+        var promote = Math.random() < (1./20.) && !goodBot;
 
         let ship = new Ship(this, null, {
-            position: new TwoVector(newShipX, newShipY)
+            position: pos,
+            maxhealth: promote ? 1000 : undefined
         });
 
         ship.playerId = playerId;
         if (ship.playerId == 0) {
             ship.isBot = true;
             ship.isGoodBot = goodBot;
-        }
-        else {
-            ship.isBot = ship.isGoodBot = false;
+            ship.isCarrier = promote;
+        } else {
+            ship.isBot = ship.isGoodBot = ship.isCarrier = false;
         }
         this.addObjectToWorld(ship);
         console.log(`ship added: ${ship.toString()}`);
