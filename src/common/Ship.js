@@ -171,7 +171,8 @@ export default class Ship extends DynamicObject {
     static get netScheme() {
         return Object.assign({
             showThrust: { type: BaseTypes.TYPES.INT32 },
-            health: {type: BaseTypes.TYPES.INT32 }
+            health: {type: BaseTypes.TYPES.INT32 },
+            weapon: {type: BaseTypes.TYPES.INT32 }
         }, super.netScheme);
     }
 
