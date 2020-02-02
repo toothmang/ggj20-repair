@@ -1,6 +1,6 @@
 import { ServerEngine } from 'lance-gg';
 const nameGenerator = require('./NameGenerator');
-const NUM_BOTS = 3;
+const NUM_BOTS = 10;
 
 export default class SpaaaceServerEngine extends ServerEngine {
 
