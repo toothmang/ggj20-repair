@@ -14,31 +14,34 @@ var gamepadAPI = {
 		console.log('Gamepad disconnected.');
 	},
 	update: function() {
-		gamepadAPI.buttonsCache = [];
+        var gps = navigator.getGamepads();
+        if (gps.length <= 0) return;
+        var gp = gps[0];
+        if (!gp || !gp.connected) return;
+        gamepadAPI.controller = gp;
+
+        // Update the list of pressed buttons
+		gamepadAPI.buttonsCache = {};
 		for(var k=0; k<gamepadAPI.buttonsStatus.length; k++) {
 			gamepadAPI.buttonsCache[k] = gamepadAPI.buttonsStatus[k];
 		}
-		gamepadAPI.buttonsStatus = [];
-		var c = gamepadAPI.controller || {};
-		var pressed = [];
-		if(c.buttons) {
-			for(var b=0,t=c.buttons.length; b<t; b++) {
-				if(c.buttons[b].pressed) {
-					pressed.push(gamepadAPI.buttons[b]);
-				}
-			}
-		}
+		gamepadAPI.buttonsStatus = {};
+		//var c = gamepadAPI.controller || {};
+		var pressed = {};
+        for(var b=0,t=gp.buttons.length; b<t; b++) {
+            if(gp.buttons[b].pressed) {
+                pressed[gamepadAPI.buttonNames[b]] = gp.buttons[b];
+            }
+        }
 		var axes = [];
-		if(c.axes) {
-			for(var a=0,x=c.axes.length; a<x; a++) {
-				axes.push(c.axes[a].toFixed(2));
-			}
-		}
+        for(var a=0,x=gp.axes.length; a<x; a++) {
+            axes.push(gp.axes[a].toFixed(2));
+        }
 		gamepadAPI.axesStatus = axes;
 		gamepadAPI.buttonsStatus = pressed;
 		return pressed;
-	},
-	buttonPressed: function(button, hold) {
+    },
+	/*buttonPressed: function(button, hold) {
 		var newPress = false;
 		for(var i=0,s=gamepadAPI.buttonsStatus.length; i<s; i++) {
 			if(gamepadAPI.buttonsStatus[i] == button) {
@@ -53,15 +56,30 @@ var gamepadAPI = {
 			}
 		}
 		return newPress;
-	},
-	buttons: [ // XBox360 layout
-		'DPad-Up','DPad-Down','DPad-Left','DPad-Right',
-		'Start','Back','Axis-Left','Axis-Right',
-		'LB','RB','Power','A','B','X','Y',
-	],
-	buttonsCache: [],
-	buttonsStatus: [],
-	axesStatus: []
+    },*/
+    // Arranged in increasing button index order
+	buttonNames: [ // XBox360 layout
+        'A',
+        'B',
+        'X',
+        'Y',
+        'LB',
+        'RB',
+        'LT',
+        'RT',
+        'Select',
+        'Start',
+        'LS',
+        'RS',
+        'Up',
+        'Down',
+        'Left',
+        'Right',
+        'Power'
+    ],
+	buttonsCache: {},
+	buttonsStatus: {},
+    axesStatus: []
 };
 
 /**
@@ -76,9 +94,6 @@ class GamepadControls {
 
         this.setupListeners();
 
-        // keep a reference for key press state
-        this.padState = {};
-
         // a list of bound keys and their corresponding actions
         this.boundKeys = {};
 
@@ -89,13 +104,26 @@ class GamepadControls {
 
             var buttonsDown = "";
 
-            for(var i = 0; i < gamepadAPI.controller.buttons.length; i++) {
-                var val = gamepadAPI.controller.buttons[i];
-                if (gamepadAPI.buttonPressed(i, true)) {
-                    buttonsDown = buttonsDown + stringify(i) + " ";
-                    this.clientEngine.sendInput("up", { movement: true });
+
+            // Check pressed buttons
+            //for(var i = 0; i < gamepadAPI.buttonsStatus.length; i++) {
+            //    if (gamepadAPI.buttonNames[i] == 'A' && )
+            //}
+            var cEngine = this.clientEngine;
+
+            Object.keys(gamepadAPI.buttonsStatus).forEach(function(buttonName) {
+                if (buttonName == 'RT') {
+                    cEngine.sendInput("space");
                 }
-            }
+            });
+
+            // for(var i = 0; i < gamepadAPI.controller.buttons.length; i++) {
+            //     var val = gamepadAPI.controller.buttons[i];
+            //     if (gamepadAPI.buttonPressed(i, true)) {
+            //         buttonsDown = buttonsDown + stringify(i) + " ";
+            //         this.clientEngine.sendInput("up", { movement: true });
+            //     }
+            // }
 
             if (gamepadAPI.axesStatus[1] > 0.5) {
                 this.clientEngine.sendInput("down", { movement: true });
@@ -110,7 +138,7 @@ class GamepadControls {
             if (gamepadAPI.axesStatus[2] > 0.5) {
                 this.clientEngine.sendInput("right", { movement: true });
             }
-            if (buttonsDown && !buttonsDown.trim())
+            if (buttonsDown && buttonsDown.trim() !== "")
             {
                 console.log(buttonsDown);
             }
@@ -130,13 +158,30 @@ class GamepadControls {
         });
     }
 
+    onFrame() {
+		let conCheck = gpLib.testForConnections();
+
+		// Check for connection or disconnection
+		if (conCheck) {
+			console.log(conCheck + " new connections");
+
+			// And reconstruct the UI if it happened
+			rebuildUI();
+		}
+
+		// Update all the UI elements
+		updateUI();
+
+		requestAnimationFrame(onFrame);
+	}
+
     setupListeners() {
         window.addEventListener("gamepadconnected", gamepadAPI.connect);
         window.addEventListener("gamepaddisconnected", gamepadAPI.disconnect);
 
         //this.clientEngine.controls.bindKey('left', 'left', { repeat: true });
         //this.clientEngine.controls.bindKey('right', 'right', { repeat: true });
-        this.clientEngine.controls.bindKey('A', 'up', { repeat: true } );
+        //this.clientEngine.controls.bindKey('A', 'up', { repeat: true } );
         //this.clientEngine.controls.bindKey('space', 'space');
     }
 

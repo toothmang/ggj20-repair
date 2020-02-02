@@ -1,10 +1,10 @@
 {
-  "name": "spaaace",
-  "version": "4.0.0",
+  "name": "REPair",
+  "version": "1.0.0",
   "engines": {
     "node": ">11.0.0"
   },
-  "description": "An HTML5 multiplayer space shooter based on Lance",
+  "description": "An HTML5 multiplayer space shooter based on Spaaaace",
   "main": "src/main.js",
   "dependencies": {
     "@babel/node": "^7.2.2",
@@ -17,7 +17,7 @@
     "howler": "^2.0.2",
     "json-loader": "^0.5.4",
     "lance-gg": "^4.0.6",
-    "node-sass": "^4.9.4",
+    "node-sass": "^4.13.1",
     "null-loader": "^0.1.1",
     "pixi-particles": "^2.0.0",
     "pixi.js": "^4.2.3",
@@ -48,7 +48,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lance-gg/spaaace.git"
+    "url": ""
   },
   "keywords": [
     "game",
@@ -60,7 +60,7 @@
   "author": "Opher Vishnia",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/lance-gg/spaaace/issues"
+    "url": ""
   },
-  "homepage": "https://github.com/lance-gg/spaaace#readme"
+  "homepage": "https://ggj20.toothmang.com"
 }
