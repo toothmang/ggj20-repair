@@ -1,6 +1,8 @@
 import { SimplePhysicsEngine, GameEngine, TwoVector } from 'lance-gg';
 import Ship from './Ship';
 import Missile from './Missile';
+import Weapon from './Weapon';
+import Utils from './Utils';
 
 export default class SpaaaceGameEngine extends GameEngine {
 
@@ -41,8 +43,9 @@ export default class SpaaaceGameEngine extends GameEngine {
 
             // make sure not to process the collision between a missile and the ship that fired it
             if (missile.playerId !== ship.playerId) {
+                ship.health -= missile.damage;
                 this.destroyMissile(missile.id);
-                this.trace.info(() => `missile by ship=${missile.playerId} hit ship=${ship.id}`);
+                this.trace.info(() => `missile by ship=${missile.playerId} hit ship=${ship.id}, health=${ship.health}`);
                 this.emit('missileHit', { missile, ship });
             }
         });
@@ -95,6 +98,26 @@ export default class SpaaaceGameEngine extends GameEngine {
                 // later on. If something goes wonky in the sphere merge, come and 
                 //check this out.
                 playerShip.angle = desiredAngle;
+            }
+
+            if (inputData.input == 'fire') {
+                let nowish = new Date();
+                var weapon = playerShip.equippedWeapon();
+                var secDiff = (nowish - weapon.lastFired) / 1000.0;
+                if (secDiff >= weapon.shotRate) {
+                    this.makeMissile(playerShip, inputData.messageIndex);
+                    this.emit('fireMissile');
+                    weapon.lastFired = nowish;
+                }
+            }
+
+            if (inputData.input == 'weapon_change') {
+                let nowish = new Date();
+                var secDiff = (nowish - playerShip.lastWeaponChange) / 1000.0;
+                if (secDiff >= 0.5) {
+                    playerShip.changeWeapon(parseInt(inputData.options.change));    
+                    playerShip.lastWeaponChange = nowish;
+                }
                 
             }
         }
@@ -117,27 +140,39 @@ export default class SpaaaceGameEngine extends GameEngine {
     };
 
     makeMissile(playerShip, inputId) {
-        let missile = new Missile(this);
+        var weapon = playerShip.equippedWeapon();
 
-        // we want the missile location and velocity to correspond to that of the ship firing it
-        missile.position.copy(playerShip.position);
-        missile.velocity.copy(playerShip.velocity);
-        missile.angle = playerShip.angle;
-        missile.playerId = playerShip.playerId;
-        missile.ownerId = playerShip.id;
-        missile.inputId = inputId; // this enables usage of the missile shadow object
-        missile.velocity.x += Math.cos(missile.angle * (Math.PI / 180)) * 10;
-        missile.velocity.y += Math.sin(missile.angle * (Math.PI / 180)) * 10;
+        let missiles = [];
+        for(var i = 0; i < weapon.missilesPerShot; i++) {
+            let missile = new Missile(this);
+            // we want the missile location and velocity to correspond to that of the ship firing it
+            missile.position.copy(playerShip.position);
+            missile.velocity.copy(playerShip.velocity);
 
-        this.trace.trace(() => `missile[${missile.id}] created vel=${missile.velocity}`);
+            // Control accuracy through weapon
+            // Assume 0 accuracy is +/- 90 degrees away from angle, 
+            // so 50% accuracy could be +/- 45 degrees away
+            let accuracyPenalty = (1.0 - weapon.accuracy) * 90.0 * Utils.randSign();
+            missile.angle = playerShip.angle + accuracyPenalty;
+            missile.playerId = playerShip.playerId;
+            missile.ownerId = playerShip.id;
+            missile.inputId = inputId; // this enables usage of the missile shadow object
+            missile.velocity.x += Math.cos(missile.angle * (Math.PI / 180)) * weapon.missileSpeed;
+            missile.velocity.y += Math.sin(missile.angle * (Math.PI / 180)) * weapon.missileSpeed;
+            missile.damage = weapon.missileDamage;
 
-        let obj = this.addObjectToWorld(missile);
+            missiles.push(missile);
 
-        // if the object was added successfully to the game world, destroy the missile after some game ticks
-        if (obj)
-            this.timer.add(30, this.destroyMissile, this, [obj.id]);
+            this.trace.trace(() => `missile[${missile.id}] created vel=${missile.velocity}`);
 
-        return missile;
+            let obj = this.addObjectToWorld(missile);
+
+            // if the object was added successfully to the game world, destroy the missile after some game ticks
+            if (obj)
+                this.timer.add(weapon.missileLife, this.destroyMissile, this, [obj.id]);
+        }
+
+        return missiles;
     }
 
     // destroy the missile if it still exists

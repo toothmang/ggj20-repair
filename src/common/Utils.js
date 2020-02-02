@@ -38,4 +38,22 @@ Utils.shortestArc = function(a, b) {
     return b-a+Math.PI*2;
 };
 
+Utils.randInt = function(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+  }
+
+Utils.randSign = function() {
+    return Utils.randInt(0, 2) == 0 ? -1 : 1;
+}
+
+Utils.randFloat = function(min, max) {
+    return min + (Math.random() * (max - min));
+}
+
+Utils.lerp = function(x, y, t) {
+    return (x * (1.0 - t)) + (y * t);
+}
+
 export default Utils;

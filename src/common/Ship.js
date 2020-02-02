@@ -1,14 +1,32 @@
 import { BaseTypes, DynamicObject, Renderer } from 'lance-gg';
 import ShipActor from '../client/ShipActor';
+import Weapon from './Weapon';
 
 export default class Ship extends DynamicObject {
 
     constructor(gameEngine, options, props) {
         super(gameEngine, options, props);
         this.showThrust = 0;
+        this.health = 100;
+        this.weapons = [
+            new Weapon(this, "standby", 1, 1, 20, 50, 10, 1),
+            new Weapon(this, "repeater", 0.05, 1, 5, 30, 10, 0.85),
+            new Weapon(this, "shotty", 0.8, 6, 8, 25, 10, 0.7),
+            new Weapon(this, "rocky", 1.5, 1, 80, 100, 8, 0.9)
+        ]
+        this.weapon = 0;
+        this.lastWeaponChange = new Date();
     }
 
-    get maxSpeed() { return 3.0; }
+    get maxSpeed() { return 6.0; }
+
+    equippedWeapon() {
+        return this.weapons[this.weapon];
+    }
+
+    changeWeapon(change) {
+        this.weapon = (this.weapon + change) % this.weapons.length;
+    }
 
     onAddToWorld(gameEngine) {
         if (Renderer) {
@@ -96,7 +114,8 @@ export default class Ship extends DynamicObject {
 
     static get netScheme() {
         return Object.assign({
-            showThrust: { type: BaseTypes.TYPES.INT32 }
+            showThrust: { type: BaseTypes.TYPES.INT32 },
+            health: {type: BaseTypes.TYPES.INT32 }
         }, super.netScheme);
     }
 

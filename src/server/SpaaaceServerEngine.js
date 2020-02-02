@@ -17,18 +17,25 @@ export default class SpaaaceServerEngine extends ServerEngine {
         for (let x = 0; x < NUM_BOTS; x++) this.makeBot();
 
         this.gameEngine.on('missileHit', e => {
+            // Reduce health of hit ship
+            e.ship.health -= e.missile.damage;
 
-            // add kills
-            if (this.scoreData[e.missile.ownerId]) this.scoreData[e.missile.ownerId].kills++;
+            if (e.ship.health <= 0) {
+                // add kills
+                if (this.scoreData[e.missile.ownerId]) this.scoreData[e.missile.ownerId].kills++;
 
-            // remove score data for killed ship
-            delete this.scoreData[e.ship.id];
-            this.updateScore();
+                // remove score data for killed ship
+                delete this.scoreData[e.ship.id];
+                this.updateScore();
 
-            console.log(`ship killed: ${e.ship.toString()}`);
-            this.gameEngine.removeObjectFromWorld(e.ship.id);
-            if (e.ship.isBot) {
-                setTimeout(() => this.makeBot(), 5000);
+                console.log(`ship killed: ${e.ship.toString()}`);
+                this.gameEngine.removeObjectFromWorld(e.ship.id);
+                if (e.ship.isBot) {
+                    setTimeout(() => this.makeBot(), 5000);
+                }
+            }
+            else {
+                console.log(`ship damage: ${e.ship.health.toString()}`);
             }
         });
     }
