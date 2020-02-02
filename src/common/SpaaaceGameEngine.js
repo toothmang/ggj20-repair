@@ -82,9 +82,18 @@ export default class SpaaaceGameEngine extends GameEngine {
             if (inputData.input == 'steer') {
                 
                 var dir = new TwoVector(parseFloat(inputData.options.x), parseFloat(inputData.options.y));
-                var desiredAngle = playerShip.angle = (180.0 / Math.PI) * Math.atan2(dir.y, dir.x);
+                var dirWeight = dir.length();
+                dir.normalize();
+
+                var radAngle = Math.atan2(dir.y, dir.x);
+                var desiredAngle = (180.0 / Math.PI) * radAngle;
+
+                //var newAngle = (playerShip.angle * (1.0 - dirWeight)) + (desiredAngle * dirWeight);
                 
-                //playerShip.turnRight(parseFloat(inputData.options.x) * 10.0);
+                // TODO: currently this assigns a ship angle between -180 and 180. 
+                // It seems to be working fine in-game, but that could be an issue
+                // later on. If something goes wonky in the sphere merge, come and 
+                //check this out.
                 playerShip.angle = desiredAngle;
                 
             }
