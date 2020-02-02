@@ -199,7 +199,11 @@ export default class SpaaaceRenderer extends Renderer {
         // this.bg4.width = this.viewportWidth;
         // this.bg4.height = this.viewportHeight;
         //
-        // this.renderer.resize(this.viewportWidth, this.viewportHeight);
+
+        this.camera3js.aspect = window.innerWidth / window.innerHeight;
+        this.camera3js.updateProjectionMatrix();
+
+        this.renderer3js.setSize( window.innerWidth, window.innerHeight );
     }
 
     draw(t, dt) {
