@@ -10,7 +10,7 @@ export default class Ship extends DynamicObject {
         this.showThrust = 0;
         this._maxHealth = 100;
         this._health = this._maxHealth;
-        this.weapons = [
+        this.weapons = {
                     // 1 shotRate
                     // 2 missilesPerShot
                     // 3 missileDamage
@@ -20,14 +20,16 @@ export default class Ship extends DynamicObject {
                     // 7 lateral spacing
                     // 8 scale
                     // 9 color
-                    // ship   name              1       2   3   4       5   6      7     8       9
-            new Weapon(this, "standby",         0.25,   1,  20, 50,     10, 1,     0.0                   ),
-            new Weapon(this, "repeater",        0.05,   1,  7,  30,     15, 0.85,  0.0,  0.7,    0xcdcd22),
-            new Weapon(this, "shotty",          0.8,    16, 4,  20,     15, 0.7,   3,    1.5,    0x010101),
-            new Weapon(this, "rocky",           0.5,    2,  80, 45,     40, 0.8,   5,    3.5,    0xff1212),
-            new Weapon(this, "twin_railgun",    1,      2,  20, 50,     30, 1,     30.0, 1.6,    0x3311ff)
-        ]
-        this.weapon = Math.trunc(Math.random() * this.weapons.length);
+                    //10 spread
+                    // ship   name                    1       2   3   4     5   6      7     8       9
+            'RT': new Weapon(this, "standby",         0.25,   1,  20, 50,   10, 1,     0.0                   ),
+            'LT': new Weapon(this, "repeater",        0.05,   1,  7,  30,   15, 0.85,  0.0,  0.7,    0xcdcd22),
+            'RB': new Weapon(this, "shotty",          0.8,    16, 4,  20,   15, 0.7,   3,    1.5,    0x010101),
+            'LB': new Weapon(this, "rocky",           0.5,    2,  80, 45,   30, 0.8,   5,    3.5,    0xff1212),
+            'LS': new Weapon(this, "twin_railgun",    1,      2,  20, 50,   30, 1,     30.0, 1.6,    0x3311ff),
+            'RS': new Weapon(this, "panic_mode",      0.1,    16, 10, 10,   8,  0.0,   0.1,   0.1,   0xffffff, 180)
+        };
+        //this.weapon = Math.trunc(Math.random() * this.weapons.length);
         this.lastWeaponChange = new Date();
     }
 
@@ -41,12 +43,8 @@ export default class Ship extends DynamicObject {
 
     get maxSpeed() { return 7.0; }
 
-    equippedWeapon() {
-        return this.weapons[this.weapon];
-    }
-
-    changeWeapon(change) {
-        this.weapon = (this.weapon + change) % this.weapons.length;
+    buttonWeapon(button) {
+        return this.weapons[button];
     }
 
     onAddToWorld(gameEngine) {
@@ -204,16 +202,25 @@ export default class Ship extends DynamicObject {
             this.steer();
         };
 
+
+        var shipWeapons = this.weapons;
+        
+
         this.gameEngine.on('preStep', this.onPreStep);
 
         let fireLoopTime = Math.round(25);
+        
         this.fireLoop = this.gameEngine.timer.loop(fireLoopTime, () => {
             if (this.target && this.distanceToTargetSquared(this.target) < 160000) {
+                let choices = Object.keys(shipWeapons);
+                //console.log(choices);
+                var randButton = choices[Utils.randInt(0, choices.length)];
+                //console.log("firing " + randButton);
+                var weapon = shipWeapons[randButton];
                 let nowish = new Date();
-                var weapon = this.equippedWeapon();
                 var secDiff = (nowish - weapon.lastFired) / 1000.0;
                 if (secDiff >= weapon.shotRate) {
-                    this.gameEngine.makeMissile(this);
+                    this.gameEngine.makeMissile(this, null, weapon);
                     weapon.lastFired = nowish;
                 }
             }
