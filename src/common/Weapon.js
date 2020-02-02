@@ -5,7 +5,7 @@ import Missile from './Missile'
 export default class Weapon  {
 
     // Seconds between shots, how many missiles per shot, how accurate is it overall
-    constructor(ship, name, shotRate, missilesPerShot, missileDamage, missileLife, missileSpeed, accuracy){
+    constructor(ship, name, shotRate, missilesPerShot, missileDamage, missileLife, missileSpeed, accuracy, lateral){
         this.ship = ship;
         this.name = name;
         this.shotRate = shotRate;
@@ -14,6 +14,7 @@ export default class Weapon  {
         this.missileLife = missileLife;
         this.missileSpeed = missileSpeed;
         this.accuracy = accuracy;
+        this.lateral = lateral
 
         this.lastFired = new Date();
     }

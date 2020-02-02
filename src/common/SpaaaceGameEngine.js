@@ -77,13 +77,13 @@ export default class SpaaaceGameEngine extends GameEngine {
             }
 
             if (inputData.input == 'move') {
-                
+
                 var vel = new TwoVector(parseFloat(inputData.options.x), parseFloat(inputData.options.y));
                 playerShip.velocity.add(vel);
             }
 
             if (inputData.input == 'steer') {
-                
+
                 var dir = new TwoVector(parseFloat(inputData.options.x), parseFloat(inputData.options.y));
                 var dirWeight = dir.length();
                 dir.normalize();
@@ -92,10 +92,10 @@ export default class SpaaaceGameEngine extends GameEngine {
                 var desiredAngle = (180.0 / Math.PI) * radAngle;
 
                 //var newAngle = (playerShip.angle * (1.0 - dirWeight)) + (desiredAngle * dirWeight);
-                
-                // TODO: currently this assigns a ship angle between -180 and 180. 
+
+                // TODO: currently this assigns a ship angle between -180 and 180.
                 // It seems to be working fine in-game, but that could be an issue
-                // later on. If something goes wonky in the sphere merge, come and 
+                // later on. If something goes wonky in the sphere merge, come and
                 //check this out.
                 playerShip.angle = desiredAngle;
             }
@@ -115,10 +115,10 @@ export default class SpaaaceGameEngine extends GameEngine {
                 let nowish = new Date();
                 var secDiff = (nowish - playerShip.lastWeaponChange) / 1000.0;
                 if (secDiff >= 0.5) {
-                    playerShip.changeWeapon(parseInt(inputData.options.change));    
+                    playerShip.changeWeapon(parseInt(inputData.options.change));
                     playerShip.lastWeaponChange = nowish;
                 }
-                
+
             }
         }
     };
@@ -143,14 +143,18 @@ export default class SpaaaceGameEngine extends GameEngine {
         var weapon = playerShip.equippedWeapon();
 
         let missiles = [];
+        var offset = -weapon.lateral * (weapon.missilesPerShot-1) / 2;
+        let lateral_vector = new TwoVector(-Math.sin(playerShip.angle), Math.cos(playerShip.angle));
         for(var i = 0; i < weapon.missilesPerShot; i++) {
             let missile = new Missile(this);
             // we want the missile location and velocity to correspond to that of the ship firing it
-            missile.position.copy(playerShip.position);
+            //missile.position.copy(playerShip.position);
+            missile.position = new TwoVector(playerShip.position.x + (offset * lateral_vector.x),
+                                             playerShip.position.y + (offset * lateral_vector.y) );
             missile.velocity.copy(playerShip.velocity);
 
             // Control accuracy through weapon, quadratic style
-            // Assume 0 accuracy is +/- 90 degrees away from angle, 
+            // Assume 0 accuracy is +/- 90 degrees away from angle,
             // so 50% accuracy could be +/- 45 degrees away
             let accuracy = Utils.lerp(weapon.accuracy, 1.0, Math.random());
             let accuracyPenalty = (1.0 - accuracy) * 90.0 * Utils.randSign();
@@ -171,6 +175,8 @@ export default class SpaaaceGameEngine extends GameEngine {
             // if the object was added successfully to the game world, destroy the missile after some game ticks
             if (obj)
                 this.timer.add(weapon.missileLife, this.destroyMissile, this, [obj.id]);
+
+            offset += weapon.lateral;
         }
 
         return missiles;
