@@ -284,14 +284,14 @@ export default class SpaaaceRenderer extends Renderer {
             //     console.log("Camera scoot: " + scoot_x + " " + scoot_y )
             // }
 
-            var right = this.gameCoordsToGlobe(playerData.position.x + 40, playerData.position.y);
-            var up    = this.gameCoordsToGlobe(playerData.position.x     , playerData.position.y + 40);
-            this.rightGoober.position.x = right.x;
-            this.rightGoober.position.y = right.y;
-            this.rightGoober.position.z = right.z;
-            this.upGoober.position.x = up.x;
-            this.upGoober.position.y = up.y;
-            this.upGoober.position.z = up.z;
+            // var right = this.gameCoordsToGlobe(playerData.position.x + 40, playerData.position.y);
+            // var up    = this.gameCoordsToGlobe(playerData.position.x     , playerData.position.y + 40);
+            // this.rightGoober.position.x = right.x;
+            // this.rightGoober.position.y = right.y;
+            // this.rightGoober.position.z = right.z;
+            // this.upGoober.position.x = up.x;
+            // this.upGoober.position.y = up.y;
+            // this.upGoober.position.z = up.z;
         }
 
         // this.world.rotation.y =  (Math.PI / 4) * (this.world_focus_x / this.world_window);
@@ -322,6 +322,10 @@ export default class SpaaaceRenderer extends Renderer {
             }
             if (!coords.isVisible) {
                 this.scene.remove( model );
+            }
+
+            if (model.type == "Group") {
+                model.children[0].rotation.x += 0.01
             }
 
             // orientation.position.set( coords.x, coords.y, coords.z );
