@@ -7,7 +7,8 @@ export default class Ship extends DynamicObject {
     constructor(gameEngine, options, props) {
         super(gameEngine, options, props);
         this.showThrust = 0;
-        this.health = 100;
+        this._maxHealth = 100;
+        this._health = this._maxHealth;
         this.weapons = [
             new Weapon(this, "standby", 1, 1, 20, 50, 10, 1),
             new Weapon(this, "repeater", 0.05, 1, 5, 30, 10, 0.85),
@@ -18,7 +19,11 @@ export default class Ship extends DynamicObject {
         this.lastWeaponChange = new Date();
     }
 
+    get health() { return this._health; }
+    set health(h) { this._health = h; this.refreshHealthBar(); }
+
     get maxSpeed() { return 7.0; }
+
 
     equippedWeapon() {
         return this.weapons[this.weapon];
@@ -48,30 +53,15 @@ export default class Ship extends DynamicObject {
 
 
 
-            var hb_radius = 2.;
-            var hb_width = .3;
-
-            var points = []
-            points.push( new THREE.Vector2( hb_radius, 0. ) );
-            points.push( new THREE.Vector2( hb_radius + hb_width, 0.) );
-
-            // var points = [ new THREE.Vector2( hb_radius, 0. ), new THREE.Vector2( hb_radius + hb_width, 0.) ];
-            var healthbarGeom = new THREE.LatheBufferGeometry( points, 64, -Math.PI*7/4, Math.PI*3/2 );
-            var healthbarMaterial = new THREE.MeshBasicMaterial( {color: 0xff0000} );
-            var healthbar = new THREE.Mesh( healthbarGeom, healthbarMaterial );
-            healthbar.rotation.fromArray([0., -Math.PI/2., -Math.PI/2.]);
-
-            // renderer.healthbars[this.id] = healthbar
-
-
 
             var group = new THREE.Group();
             group.add( model );
-            group.add( healthbar );
+
             // renderer.scene.add( model );
             renderer.models[this.id] = group;
+            this.model = group;
 
-
+            this.refreshHealthBar();
 
             // let sprite = shipActor.sprite;
             // renderer.sprites[this.id] = sprite;
@@ -85,6 +75,33 @@ export default class Ship extends DynamicObject {
             } else {
                 renderer.addOffscreenIndicator(this);
             }
+        }
+    }
+
+    refreshHealthBar() {
+        if (Renderer) {
+            if (this.healthbar) {
+                this.model.remove(this.healthbar);
+            }
+
+            if (!this.model) return; // Not done constructing object yet!
+
+            var hb_radius = 2.;
+            var hb_width = .3;
+
+            var points = []
+            points.push( new THREE.Vector2( hb_radius, 0. ) );
+            points.push( new THREE.Vector2( hb_radius + hb_width, 0.) );
+
+            // var points = [ new THREE.Vector2( hb_radius, 0. ), new THREE.Vector2( hb_radius + hb_width, 0.) ];
+            var healthpct = this._health / this._maxHealth;
+            var healthbarGeom = new THREE.LatheBufferGeometry( points, 64, -Math.PI*7/4, healthpct * Math.PI*3/2 );
+            var healthbarMaterial = new THREE.MeshBasicMaterial( {color: 0xff0000} );
+            var healthbar = new THREE.Mesh( healthbarGeom, healthbarMaterial );
+            healthbar.rotation.fromArray([0., -Math.PI/2., -Math.PI/2.]);
+            this.healthbar = healthbar;
+
+            this.model.add( healthbar );
         }
     }
 
