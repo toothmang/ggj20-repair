@@ -88,20 +88,22 @@ export default class SpaaaceRenderer extends Renderer {
         this.scene = new THREE.Scene();
 
         var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.25 );
+        directionalLight.position.set(-10., 10., -100.); // FIXME: Investigate sign flip
         this.scene.add( directionalLight );
 
         var geometry = new THREE.SphereGeometry( this.worldRadius, 128, 64 );
-        var lineGeometry = new THREE.WireframeGeometry( geometry );
+        // var lineGeometry = new THREE.WireframeGeometry( geometry );
 
-        var surfaceMaterial = new THREE.MeshBasicMaterial( {color: 0x4444ff} );
-        var edgeMaterial = new THREE.LineBasicMaterial( { color: 0xffffff });
+        // var surfaceMaterial = new THREE.MeshBasicMaterial( {color: 0x4444ff} );
+        // var edgeMaterial = new THREE.LineBasicMaterial( { color: 0xffffff });
+        var surfaceMaterial = new THREE.MeshPhongMaterial( {color: 0x4444ff, specular: 0x2222aa, shininess: 30, flatShading:true} )
 
         var worldMesh = new THREE.Mesh( geometry, surfaceMaterial );
-        var worldGrid = new THREE.LineSegments( lineGeometry, edgeMaterial );
+        //var worldGrid = new THREE.LineSegments( lineGeometry, edgeMaterial );
 
         var group = new THREE.Group();
         group.add( worldMesh );
-        group.add( worldGrid );
+        //group.add( worldGrid );
         this.world = group;
 
         this.scene.add( group );
@@ -120,7 +122,7 @@ export default class SpaaaceRenderer extends Renderer {
         this.world_window = 1000.; //this.gameEngine.worldSettings.width / 4.;
                                    //this.gameEngine.worldSettings is undefined *and* in setupStage()?!
         this.world_free_roam = 50.;
-        this.world_focus_scoot_rate = 0.05;
+        this.world_focus_scoot_rate = 0.08;
         this.world_cell_size = 125.;
 
         this.renderer3js = new THREE.WebGLRenderer( { antialias: true } );

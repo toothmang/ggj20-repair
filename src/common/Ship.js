@@ -8,7 +8,7 @@ export default class Ship extends DynamicObject {
         this.showThrust = 0;
     }
 
-    get maxSpeed() { return 3.0; }
+    get maxSpeed() { return 7.0; }
 
     onAddToWorld(gameEngine) {
         if (Renderer) {
