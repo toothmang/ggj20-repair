@@ -90,7 +90,7 @@ export default class SpaaaceRenderer extends Renderer {
         var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.25 );
         this.scene.add( directionalLight );
 
-        var geometry = new THREE.SphereGeometry( this.worldRadius, 64, 64 );
+        var geometry = new THREE.SphereGeometry( this.worldRadius, 128, 64 );
         var lineGeometry = new THREE.WireframeGeometry( geometry );
 
         var surfaceMaterial = new THREE.MeshBasicMaterial( {color: 0x4444ff} );
@@ -121,6 +121,7 @@ export default class SpaaaceRenderer extends Renderer {
                                    //this.gameEngine.worldSettings is undefined *and* in setupStage()?!
         this.world_free_roam = 50.;
         this.world_focus_scoot_rate = 0.05;
+        this.world_cell_size = 125.;
 
         this.renderer3js = new THREE.WebGLRenderer( { antialias: true } );
         this.renderer3js.setPixelRatio( window.devicePixelRatio );
@@ -276,9 +277,15 @@ export default class SpaaaceRenderer extends Renderer {
             this.upGoober.position.z = up.z;
         }
 
-        this.world.rotation.y =  (Math.PI / 4) * (this.world_focus_x / this.world_window);
-        this.world.rotation.x =  (Math.PI / 4) * (this.world_focus_y / this.world_window);
+        // this.world.rotation.y =  (Math.PI / 4) * (this.world_focus_x / this.world_window);
+        // this.world.rotation.x =  (Math.PI / 4) * (this.world_focus_y / this.world_window);
 
+        let world_offset_x = Math.trunc(this.world_focus_x / this.world_cell_size) * this.world_cell_size;
+        let world_phase_x  = this.world_focus_x - world_offset_x;
+        this.world.rotation.y =  (Math.PI / 4) * (world_phase_x / this.world_window);
+        let world_offset_y = Math.trunc(this.world_focus_y / this.world_cell_size) * this.world_cell_size;
+        let world_phase_y  = this.world_focus_y - world_offset_y;
+        this.world.rotation.x = -(Math.PI / 4) * (world_phase_y / this.world_window);
 
         for (let objId of Object.keys(this.models)) {
             let objData = this.gameEngine.world.objects[objId];
