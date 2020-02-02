@@ -26,6 +26,7 @@ export default class SpaaaceRenderer extends Renderer {
         // PIXI = require('pixi.js');
         // this.sprites = {};
         this.models = {};
+        // this.healthbars = {};
         this.isReady = true;
 
         // asset prefix
@@ -318,6 +319,20 @@ export default class SpaaaceRenderer extends Renderer {
             model.position.y = coords.y;
             model.position.z = coords.z;
             model.rotation.fromArray([coords.rx, coords.ry, coords.rz]);
+
+            // let healthbar = this.healthbars[objId];
+            // if (healthbar) {
+            //     if (coords.isVisible) {
+            //         healthbar.position.x = coords.x;
+            //         healthbar.position.y = coords.y;
+            //         healthbar.position.z = coords.z;
+            //         healthbar.rotation.fromArray([coords.rx, coords.ry, coords.rz]);
+            //         this.scene.add( healthbar );
+            //     } else {
+            //         this.scene.remove( healthbar );
+            //     }
+            // }
+
         }
 
             //         sprite.y = objData.position.y;
@@ -652,7 +667,7 @@ export default class SpaaaceRenderer extends Renderer {
             y -= worldHeight;
         }
 
-        var radius = this.worldRadius * 1.02; // TODO: should add per-object height offset!
+        var radius = this.worldRadius * 1.05; // TODO: should add per-object height offset!
         var rx = x / this.world_window;
         var ry = y / this.world_window;
 

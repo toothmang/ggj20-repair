@@ -17,6 +17,7 @@ export default class Ship extends DynamicObject {
 
             var color = 0xff4444;
             if (gameEngine.isOwnedByPlayer(this)) color = 0x44aa44;
+            else if (this.playerId > 0) color = 0x22ffff;
 
             //var geometry = new THREE.SphereGeometry( this.worldRadius, 64, 64 );
             var surfaceMaterial = new THREE.MeshBasicMaterial( {color: color} );
@@ -27,11 +28,32 @@ export default class Ship extends DynamicObject {
             var model = new THREE.Mesh( geometry, surfaceMaterial );
             model.rotation.fromArray([0., 0., -Math.PI/2.])
 
+
+
+            var hb_radius = 2.;
+            var hb_width = .3;
+
+            var points = []
+            points.push( new THREE.Vector2( hb_radius, 0. ) );
+            points.push( new THREE.Vector2( hb_radius + hb_width, 0.) );
+
+            // var points = [ new THREE.Vector2( hb_radius, 0. ), new THREE.Vector2( hb_radius + hb_width, 0.) ];
+            var healthbarGeom = new THREE.LatheBufferGeometry( points, 64, -Math.PI*7/4, Math.PI*3/2 );
+            var healthbarMaterial = new THREE.MeshBasicMaterial( {color: 0xff0000} );
+            var healthbar = new THREE.Mesh( healthbarGeom, healthbarMaterial );
+            healthbar.rotation.fromArray([0., -Math.PI/2., -Math.PI/2.]);
+
+            // renderer.healthbars[this.id] = healthbar
+
+
+
             var group = new THREE.Group();
             group.add( model );
-
+            group.add( healthbar );
             // renderer.scene.add( model );
             renderer.models[this.id] = group;
+
+
 
             // let sprite = shipActor.sprite;
             // renderer.sprites[this.id] = sprite;
@@ -72,6 +94,11 @@ export default class Ship extends DynamicObject {
                 renderer.scene.remove(model);
                 delete renderer.models[this.id];
             }
+            // let healthbar = renderer.healthbars[this.id];
+            // if (healthbar) {
+            //     renderer.scene.remove(healthbar);
+            //     delete renderer.healthbars[this.id];
+            // }
 
             // let sprite = renderer.sprites[this.id];
             // if (sprite) {
