@@ -54,11 +54,8 @@ export default class Ship extends DynamicObject {
             if (gameEngine.isOwnedByPlayer(this)) color = 0x44aa44;
             else if (this.playerId > 0) color = 0x22ffff;
 
-            //var geometry = new THREE.SphereGeometry( this.worldRadius, 64, 64 );
-            var surfaceMaterial = new THREE.MeshBasicMaterial( {color: color} );
-
             var geometry = new THREE.ConeGeometry( 0.5, 2.0, 10, 1, false );
-            //var surfaceMaterial = new THREE.MeshPhongMaterial( {color: 0xaa0000, specular: 0x000088, shininess: 30, flatShading:true} )
+            var surfaceMaterial = new THREE.MeshPhongMaterial( {color: color, specular: 0xaaaaff, shininess: 50, flatShading:true} )
 
             var model = new THREE.Mesh( geometry, surfaceMaterial );
             model.rotation.fromArray([0., 0., -Math.PI/2.])
@@ -232,7 +229,7 @@ export default class Ship extends DynamicObject {
         let closestDistance2 = Infinity;
         for (let objId of Object.keys(this.gameEngine.world.objects)) {
             let obj = this.gameEngine.world.objects[objId];
-            if (obj != this) {
+            if (obj != this && obj.playerId > 0) {
                 let distance2 = this.distanceToTargetSquared(obj);
                 if (distance2 < closestDistance2) {
                     closestTarget = obj;
