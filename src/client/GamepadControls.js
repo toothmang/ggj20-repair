@@ -155,11 +155,11 @@ class GamepadControls {
 
             if (sendmove)
             {
-                this.clientEngine.sendInput("move", {x: lx, y: ly});
+                this.clientEngine.sendInput("move", {x: -lx, y: -ly}); // FIXME: Investigate sign flip
             }
             if (sendsteer)
             {
-                this.clientEngine.sendInput("steer", {x: rx, y: ry});
+                this.clientEngine.sendInput("steer", {x: -rx, y: -ry}); // FIXME: Investigate sign flip
             }
         });
     }

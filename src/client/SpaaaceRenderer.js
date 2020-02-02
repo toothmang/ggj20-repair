@@ -643,7 +643,7 @@ export default class SpaaaceRenderer extends Renderer {
             y -= worldHeight;
         }
 
-        var radius = this.worldRadius * 1.12; // TODO: should add per-object height offset!
+        var radius = this.worldRadius * 1.02; // TODO: should add per-object height offset!
         var rx = x / this.world_window;
         var ry = y / this.world_window;
 
