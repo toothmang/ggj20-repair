@@ -145,6 +145,8 @@ export default class SpaaaceGameEngine extends GameEngine {
         let missiles = [];
         for(var i = 0; i < weapon.missilesPerShot; i++) {
             let missile = new Missile(this);
+            missile.setStyle(weapon.scale, weapon.color);
+            
             // we want the missile location and velocity to correspond to that of the ship firing it
             missile.position.copy(playerShip.position);
             missile.velocity.copy(playerShip.velocity);

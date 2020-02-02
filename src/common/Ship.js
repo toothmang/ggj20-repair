@@ -1,6 +1,7 @@
 import { BaseTypes, DynamicObject, Renderer } from 'lance-gg';
 import ShipActor from '../client/ShipActor';
 import Weapon from './Weapon';
+import Utils from './Utils';
 
 export default class Ship extends DynamicObject {
 
@@ -15,12 +16,14 @@ export default class Ship extends DynamicObject {
                     // 3 missileDamage
                     // 4 missileLife
                     // 5 missileSpeed
-                    // 6 accuracy 
-                    // ship   name        1      2   3   4    5   6
-            new Weapon(this, "standby",  1,     1,  20, 50,  10, 1),
-            new Weapon(this, "repeater", 0.05,  1,  5,  30,  10, 0.85),
-            new Weapon(this, "shotty",   0.8,   16, 8,  25,  10, 0.7),
-            new Weapon(this, "rocky",    1.5,   1,  80, 100, 8,  0.9)
+                    // 6 accuracy
+                    // 7 scale
+                    // 8 color
+                    // ship   name        1      2   3   4    5   6     7       8
+            new Weapon(this, "standby",  1,     1,  20, 50,  10,  1,    1),
+            new Weapon(this, "repeater", 0.05,  1,  5,  30,  10,  0.85, 0.7,    0xcdcd22),
+            new Weapon(this, "shotty",   0.8,   16, 8,  25,  10,  0.7,  1.),
+            new Weapon(this, "rocky",    1.5,   1,  80, 100, 8,   0.9,  3.5)
         ]
         this.weapon = 0;
         this.lastWeaponChange = new Date();
@@ -186,16 +189,25 @@ export default class Ship extends DynamicObject {
     attachAI() {
         this.isBot = true;
 
+        this.weapon = Utils.randInt(0, this.weapons.length);
+        //this.weapon = 1;
+
         this.onPreStep = () => {
             this.steer();
         };
 
         this.gameEngine.on('preStep', this.onPreStep);
 
-        let fireLoopTime = Math.round(250 + Math.random() * 100);
+        let fireLoopTime = Math.round(25);
         this.fireLoop = this.gameEngine.timer.loop(fireLoopTime, () => {
             if (this.target && this.distanceToTargetSquared(this.target) < 160000) {
-                this.gameEngine.makeMissile(this);
+                let nowish = new Date();
+                var weapon = this.equippedWeapon();
+                var secDiff = (nowish - weapon.lastFired) / 1000.0;
+                if (secDiff >= weapon.shotRate) {
+                    this.gameEngine.makeMissile(this);
+                    weapon.lastFired = nowish;
+                }
             }
         });
     }
