@@ -125,36 +125,42 @@ class GamepadControls {
             //     }
             // }
 
-            if (gamepadAPI.axesStatus[1] > 0.5) {
-                this.clientEngine.sendInput("down", { movement: true });
-            }
-            if (gamepadAPI.axesStatus[1] < -0.5) {
-                this.clientEngine.sendInput("up", { movement: true });
+            var lx = 0.0, ly = 0.0, rx = 0.0, ry = 0.0;
+            var sendmove = false, sendsteer = false;
+            var deadzone = 0.2;
+
+            // Get left stick values
+            if (Math.abs(gamepadAPI.axesStatus[0]) > deadzone) {
+                //this.clientEngine.sendInput("down", { movement: true });
+                lx = gamepadAPI.axesStatus[0];
+                sendmove = true;
             }
 
-            if (gamepadAPI.axesStatus[2] < -0.5) {
-                this.clientEngine.sendInput("left", { movement: true });
+            if (Math.abs(gamepadAPI.axesStatus[1]) > deadzone) {
+                //this.clientEngine.sendInput("down", { movement: true });
+                ly = gamepadAPI.axesStatus[1];
+                sendmove = true;
             }
-            if (gamepadAPI.axesStatus[2] > 0.5) {
-                this.clientEngine.sendInput("right", { movement: true });
+
+            if (Math.abs(gamepadAPI.axesStatus[2]) > deadzone) {
+                //this.clientEngine.sendInput("left", { movement: true });
+                rx = gamepadAPI.axesStatus[2];
+                sendsteer = true;
             }
-            if (buttonsDown && buttonsDown.trim() !== "")
+            if (Math.abs(gamepadAPI.axesStatus[3]) > deadzone) {
+                //this.clientEngine.sendInput("left", { movement: true });
+                ry = gamepadAPI.axesStatus[3];
+                sendsteer = true;
+            }
+
+            if (sendmove)
             {
-                console.log(buttonsDown);
+                this.clientEngine.sendInput("move", {x: lx, y: ly});
             }
-            /*
-            for (let keyName of Object.keys(this.boundKeys)) {
-                if (this.keyState[keyName] && this.keyState[keyName].isDown) {
-
-                    // handle repeat press
-                    if (this.boundKeys[keyName].options.repeat || this.keyState[keyName].count == 0) {
-                        // todo movement is probably redundant
-                        this.clientEngine.sendInput(this.boundKeys[keyName].actionName, { movement: true });
-                        this.keyState[keyName].count++;
-                    }
-                }
+            if (sendsteer)
+            {
+                this.clientEngine.sendInput("steer", {x: rx, y: ry});
             }
-            */
         });
     }
 

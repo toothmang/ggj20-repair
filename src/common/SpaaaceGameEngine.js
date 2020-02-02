@@ -72,6 +72,22 @@ export default class SpaaaceGameEngine extends GameEngine {
                 this.makeMissile(playerShip, inputData.messageIndex);
                 this.emit('fireMissile');
             }
+
+            if (inputData.input == 'move') {
+                
+                var vel = new TwoVector(parseFloat(inputData.options.x), parseFloat(inputData.options.y));
+                playerShip.velocity.add(vel);
+            }
+
+            if (inputData.input == 'steer') {
+                
+                var dir = new TwoVector(parseFloat(inputData.options.x), parseFloat(inputData.options.y));
+                var desiredAngle = playerShip.angle = (180.0 / Math.PI) * Math.atan2(dir.y, dir.x);
+                
+                //playerShip.turnRight(parseFloat(inputData.options.x) * 10.0);
+                playerShip.angle = desiredAngle;
+                
+            }
         }
     };
 
