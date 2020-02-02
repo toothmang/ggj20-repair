@@ -72,6 +72,31 @@ export default class SpaaaceGameEngine extends GameEngine {
                 this.makeMissile(playerShip, inputData.messageIndex);
                 this.emit('fireMissile');
             }
+
+            if (inputData.input == 'move') {
+                
+                var vel = new TwoVector(parseFloat(inputData.options.x), parseFloat(inputData.options.y));
+                playerShip.velocity.add(vel);
+            }
+
+            if (inputData.input == 'steer') {
+                
+                var dir = new TwoVector(parseFloat(inputData.options.x), parseFloat(inputData.options.y));
+                var dirWeight = dir.length();
+                dir.normalize();
+
+                var radAngle = Math.atan2(dir.y, dir.x);
+                var desiredAngle = (180.0 / Math.PI) * radAngle;
+
+                //var newAngle = (playerShip.angle * (1.0 - dirWeight)) + (desiredAngle * dirWeight);
+                
+                // TODO: currently this assigns a ship angle between -180 and 180. 
+                // It seems to be working fine in-game, but that could be an issue
+                // later on. If something goes wonky in the sphere merge, come and 
+                //check this out.
+                playerShip.angle = desiredAngle;
+                
+            }
         }
     };
 
