@@ -61,7 +61,7 @@ export default class Ship extends DynamicObject {
 
             let model = renderer.models[this.id];
             if (model) {
-                // renderer.scene.delete(model);
+                renderer.scene.remove(model);
                 delete renderer.models[this.id];
             }
 
