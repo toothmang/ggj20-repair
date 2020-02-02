@@ -101,25 +101,17 @@ export default class SpaaaceGameEngine extends GameEngine {
             }
 
             if (inputData.input == 'fire') {
+                var buttonType = inputData.options.weapon;
+                var weapon = playerShip.buttonWeapon(buttonType);
                 let nowish = new Date();
-                var weapon = playerShip.equippedWeapon();
                 var secDiff = (nowish - weapon.lastFired) / 1000.0;
                 if (secDiff >= weapon.shotRate) {
-                    this.makeMissile(playerShip, inputData.messageIndex);
+                    this.makeMissile(playerShip, inputData.messageIndex, weapon);
                     this.emit('fireMissile');
                     weapon.lastFired = nowish;
                 }
             }
 
-            if (inputData.input == 'weapon_change') {
-                let nowish = new Date();
-                var secDiff = (nowish - playerShip.lastWeaponChange) / 1000.0;
-                if (secDiff >= 0.5) {
-                    playerShip.changeWeapon(parseInt(inputData.options.change));
-                    playerShip.lastWeaponChange = nowish;
-                }
-
-            }
         } else {
             // mashing buttons, but no player ship...
             if (this.renderer && this.renderer.clientEngine.isIdle) { // ONLY ON THE CLIENT...
@@ -154,8 +146,10 @@ export default class SpaaaceGameEngine extends GameEngine {
         return ship;
     };
 
-    makeMissile(playerShip, inputId) {
-        var weapon = playerShip.equippedWeapon();
+    makeMissile(playerShip, inputId, weapon) {
+        if (!weapon) {
+            weapon = playerShip.weapons[Object.keys(playerShip.weapons)[0]];
+        }
 
         let missiles = [];
         var offset = -weapon.lateral * (weapon.missilesPerShot-1) / 2;
@@ -174,7 +168,7 @@ export default class SpaaaceGameEngine extends GameEngine {
             // Assume 0 accuracy is +/- 90 degrees away from angle,
             // so 50% accuracy could be +/- 45 degrees away
             let accuracy = Utils.lerp(weapon.accuracy, 1.0, Math.random());
-            let accuracyPenalty = (1.0 - accuracy) * 90.0 * Utils.randSign();
+            let accuracyPenalty = (1.0 - accuracy) * weapon.spread * Utils.randSign();
             missile.angle = playerShip.angle + accuracyPenalty;
             missile.playerId = playerShip.playerId;
             missile.ownerId = playerShip.id;

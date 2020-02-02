@@ -113,14 +113,14 @@ class GamepadControls {
 
             Object.keys(gamepadAPI.buttonsStatus).forEach(function(buttonName) {
                 var button = gamepadAPI.buttonsStatus[buttonName];
-                if (buttonName == 'RT' && button.pressed) {
-                    cEngine.sendInput("fire");
-                }
-                if (buttonName == 'RB' && button.pressed) {
-                    cEngine.sendInput('weapon_change', {change: 1});
-                }
-                if (buttonName == 'LB' && button.pressed) {
-                    cEngine.sendInput('weapon_change', {change: -1});
+                if (button.pressed && (
+                       buttonName == 'RT' 
+                    || buttonName == 'LT'
+                    || buttonName == 'RB'
+                    || buttonName == 'LB' 
+                    || buttonName == 'LS' 
+                    || buttonName == 'RS' )) {
+                    cEngine.sendInput("fire", {weapon: buttonName});
                 }
             });
 
