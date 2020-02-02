@@ -23,25 +23,34 @@ export default class Missile extends DynamicObject {
 
     onAddToWorld(gameEngine) {
         if (Renderer) {
-            // let renderer = Renderer.getInstance();
-            // let sprite = new PIXI.Sprite(PIXI.loader.resources.missile.texture);
-            // renderer.sprites[this.id] = sprite;
-            // sprite.width = 81 * 0.5;
-            // sprite.height = 46 * 0.5;
-            // sprite.anchor.set(0.5, 0.5);
-            // sprite.position.set(this.position.x, this.position.y);
-            // renderer.layer2.addChild(sprite);
+            let renderer = Renderer.getInstance();
+
+            //var geometry = new THREE.SphereGeometry( this.worldRadius, 64, 64 );
+            var surfaceMaterial = new THREE.MeshBasicMaterial( {color: 0xffff44} );
+
+            var geometry = new THREE.ConeGeometry( 0.2, .8, 10, 1, false );
+            //var surfaceMaterial = new THREE.MeshPhongMaterial( {color: 0xaa0000, specular: 0x000088, shininess: 30, flatShading:true} )
+
+            var model = new THREE.Mesh( geometry, surfaceMaterial );
+            model.rotation.fromArray([0., 0., -Math.PI/2.])
+
+            var group = new THREE.Group();
+            group.add( model );
+
+            // renderer.scene.add( model );
+            renderer.models[this.id] = group;
         }
     }
 
     onRemoveFromWorld(gameEngine) {
-        // if (Renderer) {
-        //     let renderer = Renderer.getInstance();
-        //     if (renderer.sprites[this.id]) {
-        //         renderer.sprites[this.id].destroy();
-        //         delete renderer.sprites[this.id];
-        //     }
-        // }
+        if (Renderer) {
+             let renderer = Renderer.getInstance();
+             let model = renderer.models[this.id];
+             if (model) {
+                 renderer.scene.remove(model);
+                 delete renderer.models[this.id];
+             }
+        }
     }
 
     syncTo(other) {

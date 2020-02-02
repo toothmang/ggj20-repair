@@ -15,15 +15,23 @@ export default class Ship extends DynamicObject {
             let renderer = Renderer.getInstance();
             let shipActor = new ShipActor(renderer);
 
-            var color = 0x7777aa;
-            if (gameEngine.isOwnedByPlayer(this)) color = 0xaaaa33;
+            var color = 0xff4444;
+            if (gameEngine.isOwnedByPlayer(this)) color = 0x44aa44;
 
-            var geometry = new THREE.SphereGeometry( this.worldRadius, 64, 64 );
+            //var geometry = new THREE.SphereGeometry( this.worldRadius, 64, 64 );
             var surfaceMaterial = new THREE.MeshBasicMaterial( {color: color} );
+
+            var geometry = new THREE.ConeGeometry( 0.5, 2.0, 10, 1, false );
+            //var surfaceMaterial = new THREE.MeshPhongMaterial( {color: 0xaa0000, specular: 0x000088, shininess: 30, flatShading:true} )
+
             var model = new THREE.Mesh( geometry, surfaceMaterial );
+            model.rotation.fromArray([0., 0., -Math.PI/2.])
+
+            var group = new THREE.Group();
+            group.add( model );
 
             // renderer.scene.add( model );
-            renderer.models[this.id] = model;
+            renderer.models[this.id] = group;
 
             // let sprite = shipActor.sprite;
             // renderer.sprites[this.id] = sprite;

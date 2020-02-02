@@ -82,18 +82,22 @@ export default class SpaaaceRenderer extends Renderer {
         // });
 
         this.camera3js = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 0.1, 100 );
-        this.camera3js.position.set( 0., 0., this.worldRadius * 2 );
+        this.camera3js.position.set( 0., 0., -this.worldRadius * 2 ); // FIXME: Investigate sign flip
         this.camera3js.lookAt( 0, 0, 0 );
 
         this.scene = new THREE.Scene();
 
+        var directionalLight = new THREE.DirectionalLight( 0xffffff, 0.25 );
+        this.scene.add( directionalLight );
+
         var geometry = new THREE.SphereGeometry( this.worldRadius, 64, 64 );
+        var lineGeometry = new THREE.WireframeGeometry( geometry );
 
         var surfaceMaterial = new THREE.MeshBasicMaterial( {color: 0x4444ff} );
         var edgeMaterial = new THREE.LineBasicMaterial( { color: 0xffffff });
 
         var worldMesh = new THREE.Mesh( geometry, surfaceMaterial );
-        var worldGrid = new THREE.LineSegments( geometry, edgeMaterial );
+        var worldGrid = new THREE.LineSegments( lineGeometry, edgeMaterial );
 
         var group = new THREE.Group();
         group.add( worldMesh );
@@ -102,11 +106,20 @@ export default class SpaaaceRenderer extends Renderer {
 
         this.scene.add( group );
 
+        var smallGooberGeom = new THREE.ConeGeometry( 0.25, 1.0, 12, 1, false );
+        var smallGooberMat = new THREE.MeshPhongMaterial( {color: 0xaa0000, specular: 0x000088, shininess: 30, flatShading:true} )
+
+        this.upGoober = new THREE.Mesh( smallGooberGeom, smallGooberMat );
+        this.rightGoober = new THREE.Mesh( smallGooberGeom, smallGooberMat );
+
+        // this.scene.add( this.upGoober );
+        // this.scene.add( this.rightGoober );
+
         this.world_focus_x = 0.;
         this.world_focus_y = 0.;
         this.world_window = 1000.; //this.gameEngine.worldSettings.width / 4.;
                                    //this.gameEngine.worldSettings is undefined *and* in setupStage()?!
-        this.world_free_roam = 100.;
+        this.world_free_roam = 50.;
         this.world_focus_scoot_rate = 0.05;
 
         this.renderer3js = new THREE.WebGLRenderer( { antialias: true } );
@@ -248,6 +261,15 @@ export default class SpaaaceRenderer extends Renderer {
             //     console.log("Camera delta: " + dx + " " + dy )
             //     console.log("Camera scoot: " + scoot_x + " " + scoot_y )
             // }
+
+            var right = this.gameCoordsToGlobe(playerData.position.x + 40, playerData.position.y);
+            var up    = this.gameCoordsToGlobe(playerData.position.x     , playerData.position.y + 40);
+            this.rightGoober.position.x = right.x;
+            this.rightGoober.position.y = right.y;
+            this.rightGoober.position.z = right.z;
+            this.upGoober.position.x = up.x;
+            this.upGoober.position.y = up.y;
+            this.upGoober.position.z = up.z;
         }
 
         this.world.rotation.y =  (Math.PI / 4) * (this.world_focus_x / this.world_window);
@@ -258,7 +280,7 @@ export default class SpaaaceRenderer extends Renderer {
             let objData = this.gameEngine.world.objects[objId];
             let model = this.models[objId];
 
-            var coords = this.gameCoordsToGlobe(objData.position.x, objData.position.y);
+            var coords = this.gameCoordsToGlobe(objData.position.x, objData.position.y, objData.angle * Math.PI / 180.);
             // var x = objData.position.x;
             // var y = objData.position.y;
             // while (x < 0.) {x += this.world_window;}
@@ -282,6 +304,7 @@ export default class SpaaaceRenderer extends Renderer {
             model.position.x = coords.x;
             model.position.y = coords.y;
             model.position.z = coords.z;
+            model.rotation.fromArray([coords.rx, coords.ry, coords.rz]);
         }
 
             //         sprite.y = objData.position.y;
@@ -598,7 +621,7 @@ export default class SpaaaceRenderer extends Renderer {
         };
     }
 
-    gameCoordsToGlobe(obj_x,obj_y) {
+    gameCoordsToGlobe(obj_x,obj_y, heading=0.) {
         let worldWidth = this.gameEngine.worldSettings.width;
         let worldHeight = this.gameEngine.worldSettings.height;
 
@@ -616,7 +639,7 @@ export default class SpaaaceRenderer extends Renderer {
             y -= worldHeight;
         }
 
-        var radius = this.worldRadius * 1.02; // TODO: should add per-object height offset!
+        var radius = this.worldRadius * 1.12; // TODO: should add per-object height offset!
         var rx = x / this.world_window;
         var ry = y / this.world_window;
 
@@ -633,7 +656,10 @@ export default class SpaaaceRenderer extends Renderer {
         return {
             x: radius * Math.sin(edge_angle) * Math.cos(angle),
             y: radius * Math.sin(edge_angle) * Math.sin(angle),
-            z: radius * Math.cos(edge_angle),
+            z: -radius * Math.cos(edge_angle), // FIXME: Investigate sign flip
+            rx: Math.sin(edge_angle) * Math.sin(angle) * Math.PI / 2.,
+            ry: Math.sin(edge_angle) * Math.cos(angle) * Math.PI / 2.,
+            rz: heading,
             isVisible: visible
         };
     }
