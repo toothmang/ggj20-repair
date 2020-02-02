@@ -1,7 +1,7 @@
 import { ServerEngine } from 'lance-gg';
 import Ship from '../common/Ship';
 const nameGenerator = require('./NameGenerator');
-const NUM_BOTS = 10;
+const NUM_BOTS = 16;
 const NUM_PICKUPS = 10;
 const FRIENDLY_RATE = 0.25;
 
