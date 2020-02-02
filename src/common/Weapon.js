@@ -22,4 +22,24 @@ export default class Weapon  {
 
         this.lastFired = new Date();
     }
+
+    multiply(other)
+    {
+        var nw = new Weapon(this.ship, this.name, 
+            this.shotRate * other.shotRate,
+            this.missilesPerShot * other.missilesPerShot,
+            this.missileDamage * other.missileDamage,
+            this.missileLife * other.missileLife,
+            this.missileSpeed * other.missileSpeed,
+            this.accuracy * other.accuracy,
+            this.lateral * other.lateral,
+            this.scale * other.scale,
+            this.color,
+            this.spread * other.spread
+        );
+
+        nw.lastFired = this.lastFired;
+
+        return nw;
+    }
 }

@@ -3,6 +3,7 @@ import Ship from './Ship';
 import Missile from './Missile';
 import Weapon from './Weapon';
 import Utils from './Utils';
+import Pickup, { PickupType } from './Pickup';
 
 export default class SpaaaceGameEngine extends GameEngine {
 
@@ -20,6 +21,7 @@ export default class SpaaaceGameEngine extends GameEngine {
     registerClasses(serializer){
         serializer.registerClass(Ship);
         serializer.registerClass(Missile);
+        serializer.registerClass(Pickup);
     }
 
     initWorld(){
@@ -37,16 +39,20 @@ export default class SpaaaceGameEngine extends GameEngine {
             let collisionObjects = Object.keys(e).map(k => e[k]);
             let ship = collisionObjects.find(o => o instanceof Ship);
             let missile = collisionObjects.find(o => o instanceof Missile);
-
-            if (!ship || !missile)
-                return;
+            let pickup = collisionObjects.find(o => o instanceof Pickup);
 
             // make sure not to process the collision between a missile and the ship that fired it
-            if (missile.playerId !== ship.playerId) {
+            if (missile && ship && missile.playerId !== ship.playerId) {
                 //ship.health -= missile.damage;
                 this.destroyMissile(missile.id);
                 this.trace.info(() => `missile by ship=${missile.playerId} hit ship=${ship.id}, health=${ship.health}`);
                 this.emit('missileHit', { missile, ship });
+            }
+            // If a player hits a pickup with a missile, they get it
+            if (pickup && ship && !ship.isBot) {
+                this.trace.info(() => `pickup type=${pickup.type} hit ship=${ship.id}`);
+                this.emit('pickupHit', { pickup, ship });
+                this.destroyPickup(pickup.id);
             }
         });
 
@@ -123,6 +129,25 @@ export default class SpaaaceGameEngine extends GameEngine {
         }
     };
 
+    // Makes a pickup,  places it randomly and adds it to the game world
+    makePickup() {
+        let newShipX = Math.floor(Math.random()*(this.worldSettings.width-200)) + 200;
+        let newShipY = Math.floor(Math.random()*(this.worldSettings.height-200)) + 200;
+
+        let pickup = new Pickup(this, null, {
+            position: new TwoVector(newShipX, newShipY),
+            width: 4,
+            height: 4
+        });
+        pickup.scale = 2.0;
+        pickup.type = (Utils.randInt(0, 2) == 0 ? PickupType.Health : PickupType.Weapon);
+
+        this.addObjectToWorld(pickup);
+        console.log(`pickup added: ${pickup.toString()}`);
+
+        return pickup;
+    }
+
     // Makes a new ship, places it randomly and adds it to the game world
     makeShip(playerId, goodBot = false, position) {
         if (!position) {
@@ -155,10 +180,12 @@ export default class SpaaaceGameEngine extends GameEngine {
         return ship;
     };
 
-    makeMissile(playerShip, inputId, weapon) {
-        if (!weapon) {
-            weapon = playerShip.weapons[Object.keys(playerShip.weapons)[0]];
+    makeMissile(playerShip, inputId, baseWeapon) {
+        if (!baseWeapon) {
+            baseWeapon = playerShip.weapons[Object.keys(playerShip.weapons)[0]];
         }
+
+        var weapon = baseWeapon.multiply(playerShip.pickupEffects);
 
         let missiles = [];
         var offset = -weapon.lateral * (weapon.missilesPerShot-1) / 2;
@@ -202,6 +229,14 @@ export default class SpaaaceGameEngine extends GameEngine {
         }
 
         return missiles;
+    }
+
+    // destroy the pickup if it still exists
+    destroyPickup(pickupId) {
+        if (this.world.objects[pickupId]) {
+            this.trace.trace(() => `pickup[${pickupId}] destroyed`);
+            this.removeObjectFromWorld(pickupId);
+        }
     }
 
     // destroy the missile if it still exists

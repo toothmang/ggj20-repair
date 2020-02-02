@@ -2,6 +2,7 @@ import { BaseTypes, DynamicObject, Renderer } from 'lance-gg';
 import ShipActor from '../client/ShipActor';
 import Weapon from './Weapon';
 import Utils from './Utils';
+import Pickup, {PickupType} from './Pickup'
 
 export default class Ship extends DynamicObject {
 
@@ -22,15 +23,18 @@ export default class Ship extends DynamicObject {
                     // 9 color
                     //10 spread
                     // ship   name                    1       2   3   4     5   6      7     8       9
-            'RT': new Weapon(this, "standby",         0.25,   1,  20, 50,   10, 1,     0.0                   ),
-            'LT': new Weapon(this, "repeater",        0.05,   1,  7,  30,   15, 0.85,  0.0,  0.7,    0xcdcd22),
-            'RB': new Weapon(this, "shotty",          0.8,    16, 4,  20,   15, 0.7,   3,    1.5,    0x010101),
-            'LB': new Weapon(this, "rocky",           0.5,    2,  80, 45,   30, 0.8,   5,    3.5,    0xff1212),
-            'LS': new Weapon(this, "twin_railgun",    1,      2,  20, 50,   30, 1,     30.0, 1.6,    0x3311ff),
+            'RB': new Weapon(this, "standby",         0.25,   1,  20, 50,   10, 1,     0.0                   ),
+            'RT': new Weapon(this, "repeater",        0.05,   1,  7,  30,   15, 0.85,  0.0,  0.7,    0xcdcd22),
+            'LT': new Weapon(this, "shotty",          0.8,    16, 4,  20,   15, 0.7,   3,    1.5,    0x010101),
+            'LB': new Weapon(this, "twin_railgun",    1,      2,  20, 50,   30, 1,     30.0, 1.6,    0x3311ff),
+            'LS': new Weapon(this, "rocky",           0.5,    2,  80, 45,   30, 0.8,   5,    3.5,    0xff1212),
             'RS': new Weapon(this, "panic_mode",      0.1,    16, 10, 10,   8,  0.0,   0.1,   0.1,   0xffffff, 180)
         };
+        this.pickupEffects = 
+                  new Weapon(this, "pickups",         1,      1,  1,  1,    1,  1,     1,    1,      1,        1);
+        this.pickupMaxes = 
+                  new Weapon(this, "maxes",           0.15,   2.5,3,  3,    3,  1,     25,   4,      1,        0.2);
         //this.weapon = Math.trunc(Math.random() * this.weapons.length);
-        this.lastWeaponChange = new Date();
     }
 
     get health() { return this._health; }
@@ -41,10 +45,76 @@ export default class Ship extends DynamicObject {
         }
         this.refreshHealthBar(); }
 
-    get maxSpeed() { return 7.0; }
+    get maxSpeed() { return 6.0; }
 
     buttonWeapon(button) {
         return this.weapons[button];
+    }
+
+    applyPickup(pickup) {
+        if (pickup.type == PickupType.Health) {
+            this.health = this.health + pickup.duration;
+        }
+        else if (pickup.type == PickupType.Weapon) {
+            // Get random weapon stat to change
+            let stat = Utils.randInt(1, 11);
+            var resetter = null;
+            var pe = this.pickupEffects;
+            var pm = this.pickupMaxes;
+            switch(stat) {
+                case 1: // shotRate
+                    pe.shotRate = pm.shotRate;
+                    resetter = () => pe.shotRate = 1;
+                    break;
+                case 2: // missilesPerShot
+                    pe.missilesPerShot = pm.missilesPerShot;
+                    resetter = () => pe.missilesPerShot = 1;
+                    break;
+                case 3: // missileDamage
+                    pe.missileDamage = pm.missileDamage;
+                    resetter = () => pe.missileDamage = 1;
+                    break;
+                case 4: // missileLife
+                    pe.missileLife = pm.missileLife;
+                    resetter = () => pe.missileLife = 1; 
+                    break;
+                case 5: // missileSpeed
+                    pe.missileSpeed = pm.missileSpeed;
+                    resetter = () => pe.missileSpeed = 1; 
+                    break;
+                case 6: // accuracy
+                    pe.accuracy = pm.accuracy;
+                    resetter = () => pe.accuracy = 1;
+                    break;
+                case 7: // lateral
+                    pe.lateral = pm.lateral;
+                    resetter = () => pe.lateral = 1;
+                    break;
+                case 8: // scale
+                    pe.scale = pm.scale;
+                    resetter = () => pe.scale = 1;
+                    break;
+                case 9: // color
+                case 10: // spread
+                    pe.spread = pm.spread;
+                    resetter = () => pe.spread = 1;
+                    break;
+                default:
+                    break;
+            }
+            console.log("Setting pickup:");
+            for (let effectName of Object.keys(pe)) {
+                if (pe[effectName] != 1) {
+                    console.log(effectName + ": " + pe[effectName].toString());
+                }
+                
+            }
+
+            setTimeout(() => { 
+                console.log(resetter.toString());
+                resetter();
+            }, pickup.duration * 1000.0);
+        }
     }
 
     onAddToWorld(gameEngine) {

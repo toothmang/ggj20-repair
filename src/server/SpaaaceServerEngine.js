@@ -2,6 +2,7 @@ import { ServerEngine } from 'lance-gg';
 import Ship from '../common/Ship';
 const nameGenerator = require('./NameGenerator');
 const NUM_BOTS = 10;
+const NUM_PICKUPS = 10;
 const FRIENDLY_RATE = 0.25;
 
 export default class SpaaaceServerEngine extends ServerEngine {
@@ -13,6 +14,7 @@ export default class SpaaaceServerEngine extends ServerEngine {
 
     spawnlevel() {
         for (let x = 0; x < NUM_BOTS; x++) this.makeBot();
+        for (let y = 0; y < NUM_PICKUPS; y++) this.makePickup();
     }
 
     // when the game starts, create robot spaceships, and register
@@ -27,6 +29,7 @@ export default class SpaaaceServerEngine extends ServerEngine {
 
             // Find out if the hit ship is a player or not
             var hitShip = e.ship;
+
             let friendly = false;
             // If they're human, see if they got hit by a good bot
             if (!hitShip.isBot) {
@@ -70,6 +73,13 @@ export default class SpaaaceServerEngine extends ServerEngine {
             //         console.log(`ship damage: ${hitShip.health.toString()}`);
             //     }
             // }
+        });
+
+        this.gameEngine.on('pickupHit', e => {
+            if (!e.ship.isBot || e.ship.isGoodBot) {
+                e.ship.applyPickup(e.pickup);
+                setTimeout(() => this.makePickup(), e.pickup.duration * 1000.0);
+            }
         });
     }
 
@@ -118,6 +128,11 @@ export default class SpaaaceServerEngine extends ServerEngine {
         };
 
         this.updateScore();
+    }
+
+    // Create a powerup
+    makePickup() {
+        var pickup = this.gameEngine.makePickup();
     }
 
     updateScore() {
