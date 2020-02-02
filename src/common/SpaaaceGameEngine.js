@@ -120,6 +120,14 @@ export default class SpaaaceGameEngine extends GameEngine {
                 }
 
             }
+        } else {
+            // mashing buttons, but no player ship...
+            if (this.renderer && this.renderer.clientEngine.isIdle) { // ONLY ON THE CLIENT...
+                if (inputData.input == 'space' || inputData.input == 'fire' || inputData.input == 'weapon_change') {
+                    this.renderer.clientEngine.socket.emit('requestRestart');
+                    this.renderer.clientEngine.isIdle = false;
+                }
+            }
         }
     };
 
@@ -155,7 +163,7 @@ export default class SpaaaceGameEngine extends GameEngine {
         for(var i = 0; i < weapon.missilesPerShot; i++) {
             let missile = new Missile(this);
             missile.setStyle(weapon.scale, weapon.color);
-            
+
             // we want the missile location and velocity to correspond to that of the ship firing it
             //missile.position.copy(playerShip.position);
             missile.position = new TwoVector(playerShip.position.x + (offset * lateral_vector.x),
