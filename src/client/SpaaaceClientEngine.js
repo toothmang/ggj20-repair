@@ -15,11 +15,14 @@ export default class SpaaaceClientEngine extends ClientEngine {
     start() {
         super.start();
 
+        this.isIdle = true;
+
         // handle gui for game condition
         this.gameEngine.on('objectDestroyed', (obj) => {
             if (obj instanceof Ship && this.gameEngine.isOwnedByPlayer(obj)) {
                 document.body.classList.add('lostGame');
                 document.querySelector('#tryAgain').disabled = false;
+                this.isIdle = true;
             }
         });
 
@@ -29,7 +32,10 @@ export default class SpaaaceClientEngine extends ClientEngine {
                 if (Utils.isTouchDevice()){
                     this.renderer.enableFullScreen();
                 }
-                this.socket.emit('requestRestart');
+                if (this.isIdle) {
+                    this.socket.emit('requestRestart');
+                    this.isIdle = false;
+                }
             });
 
             document.querySelector('#joinGame').addEventListener('click', (clickEvent) => {
@@ -37,6 +43,7 @@ export default class SpaaaceClientEngine extends ClientEngine {
                     this.renderer.enableFullScreen();
                 }
                 clickEvent.currentTarget.disabled = true;
+                this.isIdle = false;
                 this.socket.emit('requestRestart');
             });
 
