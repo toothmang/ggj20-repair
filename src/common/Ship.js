@@ -9,10 +9,17 @@ export default class Ship extends DynamicObject {
         this.showThrust = 0;
         this.health = 100;
         this.weapons = [
-            new Weapon(this, "standby", 1, 1, 20, 50, 10, 1),
-            new Weapon(this, "repeater", 0.05, 1, 5, 30, 10, 0.85),
-            new Weapon(this, "shotty", 0.8, 6, 8, 25, 10, 0.7),
-            new Weapon(this, "rocky", 1.5, 1, 80, 100, 8, 0.9)
+                    // 1 shotRate
+                    // 2 missilesPerShot
+                    // 3 missileDamage
+                    // 4 missileLife
+                    // 5 missileSpeed
+                    // 6 accuracy 
+                    // ship   name        1      2   3   4    5   6
+            new Weapon(this, "standby",  1,     1,  20, 50,  10, 1),
+            new Weapon(this, "repeater", 0.05,  1,  5,  30,  10, 0.85),
+            new Weapon(this, "shotty",   0.8,   16, 8,  25,  10, 0.7),
+            new Weapon(this, "rocky",    1.5,   1,  80, 100, 8,  0.9)
         ]
         this.weapon = 0;
         this.lastWeaponChange = new Date();

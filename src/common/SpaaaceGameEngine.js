@@ -43,7 +43,7 @@ export default class SpaaaceGameEngine extends GameEngine {
 
             // make sure not to process the collision between a missile and the ship that fired it
             if (missile.playerId !== ship.playerId) {
-                ship.health -= missile.damage;
+                //ship.health -= missile.damage;
                 this.destroyMissile(missile.id);
                 this.trace.info(() => `missile by ship=${missile.playerId} hit ship=${ship.id}, health=${ship.health}`);
                 this.emit('missileHit', { missile, ship });
@@ -149,10 +149,11 @@ export default class SpaaaceGameEngine extends GameEngine {
             missile.position.copy(playerShip.position);
             missile.velocity.copy(playerShip.velocity);
 
-            // Control accuracy through weapon
+            // Control accuracy through weapon, quadratic style
             // Assume 0 accuracy is +/- 90 degrees away from angle, 
             // so 50% accuracy could be +/- 45 degrees away
-            let accuracyPenalty = (1.0 - weapon.accuracy) * 90.0 * Utils.randSign();
+            let accuracy = Utils.lerp(weapon.accuracy, 1.0, Math.random());
+            let accuracyPenalty = (1.0 - accuracy) * 90.0 * Utils.randSign();
             missile.angle = playerShip.angle + accuracyPenalty;
             missile.playerId = playerShip.playerId;
             missile.ownerId = playerShip.id;
