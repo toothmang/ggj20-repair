@@ -15,7 +15,9 @@ export default class Missile extends DynamicObject {
 
     static get netScheme() {
         return Object.assign({
-            inputId: { type: BaseTypes.TYPES.INT32 }
+            inputId: { type: BaseTypes.TYPES.INT32 },
+            color: {type: BaseTypes.TYPES.INT32 },
+            scale: {type: BaseTypes.TYPES.FLOAT32 }
         }, super.netScheme);
     }
 
@@ -66,5 +68,7 @@ export default class Missile extends DynamicObject {
     syncTo(other) {
         super.syncTo(other);
         this.inputId = other.inputId;
+        this.color = other.color;
+        this.scale = other.scale;
     }
 }
