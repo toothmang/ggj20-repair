@@ -25,6 +25,7 @@ export default class SpaaaceRenderer extends Renderer {
         super(gameEngine, clientEngine);
         // PIXI = require('pixi.js');
         // this.sprites = {};
+        this.models = {};
         this.isReady = true;
 
         // asset prefix
@@ -100,6 +101,13 @@ export default class SpaaaceRenderer extends Renderer {
         this.world = group;
 
         this.scene.add( group );
+
+        this.world_focus_x = 0.;
+        this.world_focus_y = 0.;
+        this.world_window = 1000.; //this.gameEngine.worldSettings.width / 4.;
+                                   //this.gameEngine.worldSettings is undefined *and* in setupStage()?!
+        this.world_free_roam = 100.;
+        this.world_focus_scoot_rate = 0.05;
 
         this.renderer3js = new THREE.WebGLRenderer( { antialias: true } );
         this.renderer3js.setPixelRatio( window.devicePixelRatio );
@@ -190,16 +198,94 @@ export default class SpaaaceRenderer extends Renderer {
         let worldWidth = this.gameEngine.worldSettings.width;
         let worldHeight = this.gameEngine.worldSettings.height;
 
-        // Keep these, maybe?
-        // let viewportSeesRightBound = this.camera.x < this.viewportWidth - worldWidth;
-        // let viewportSeesLeftBound = this.camera.x > 0;
-        // let viewportSeesTopBound = this.camera.y > 0;
-        // let viewportSeesBottomBound = this.camera.y < this.viewportHeight - worldHeight;
+        var orientation = new THREE.Object3D();
 
-        // for (let objId of Object.keys(this.sprites)) {
-        //     let objData = this.gameEngine.world.objects[objId];
-        //     let sprite = this.sprites[objId];
-        //
+        // Scoot camera toward player
+        if (this.playerShip) {
+            let objId = this.playerShip.id;
+            let playerData = this.gameEngine.world.objects[objId];
+
+            var dx = playerData.position.x - this.world_focus_x;
+            var dy = playerData.position.y - this.world_focus_y;
+
+            if (Math.abs(dx) > Math.abs(dx + worldWidth)) {
+                dx += worldWidth;
+            } else if (Math.abs(dx) > Math.abs(dx - worldWidth)) {
+                dx -= worldWidth;
+            }
+            if (Math.abs(dy) > Math.abs(dy + worldHeight)) {
+                dy += worldHeight;
+            } else if (Math.abs(dy) > Math.abs(dy - worldHeight)) {
+                dy -= worldHeight;
+            }
+
+            var scoot_x = 0.;
+            var scoot_y = 0.;
+            if (this.world_free_roam < dx) {
+                scoot_x += this.world_focus_scoot_rate * (dx - this.world_free_roam)
+            }
+            if (dx < -this.world_free_roam) {
+                scoot_x += this.world_focus_scoot_rate * (dx + this.world_free_roam)
+            }
+            if (this.world_free_roam < dy) {
+                this.world_focus_y += this.world_focus_scoot_rate * (dy - this.world_free_roam)
+            }
+            if (dy < -this.world_free_roam) {
+                this.world_focus_y += this.world_focus_scoot_rate * (dy + this.world_free_roam)
+            }
+
+            this.world_focus_x += scoot_x;
+            this.world_focus_y += scoot_y;
+
+            if (this.world_focus_x < 0.)          this.world_focus_x += worldWidth;
+            if (worldWidth < this.world_focus_x)  this.world_focus_x -= worldWidth;
+            if (this.world_focus_y < 0.)          this.world_focus_y += worldHeight;
+            if (worldHeight < this.world_focus_y) this.world_focus_y -= worldHeight;
+
+            // if (scoot_x || scoot_y) {
+            //     console.log("Player position:" + playerData.position.x + " " + playerData.position.y)
+            //     console.log("Camera position:" + this.world_focus_x + " " + this.world_focus_y)
+            //     console.log("Camera delta: " + dx + " " + dy )
+            //     console.log("Camera scoot: " + scoot_x + " " + scoot_y )
+            // }
+        }
+
+        this.world.rotation.y =  (Math.PI / 4) * (this.world_focus_x / this.world_window);
+        this.world.rotation.x =  (Math.PI / 4) * (this.world_focus_y / this.world_window);
+
+
+        for (let objId of Object.keys(this.models)) {
+            let objData = this.gameEngine.world.objects[objId];
+            let model = this.models[objId];
+
+            var coords = this.gameCoordsToGlobe(objData.position.x, objData.position.y);
+            // var x = objData.position.x;
+            // var y = objData.position.y;
+            // while (x < 0.) {x += this.world_window;}
+            // while (y < 0.) {y += this.world_window;}
+            // while (this.world_window <= x) {x -= this.world_window;}
+            // while (this.world_window <= y) {y -= this.world_window;}
+            // var coords = this.gameCoordsToGlobe(x,y);
+
+            if (coords.isVisible) {
+                this.scene.add( model );
+            }
+            if (!coords.isVisible) {
+                this.scene.remove( model );
+            }
+
+            // orientation.position.set( coords.x, coords.y, coords.z );
+            // orientation.updateMatrix();
+            //
+            // model.updateMatrix( orientation );
+
+            model.position.x = coords.x;
+            model.position.y = coords.y;
+            model.position.z = coords.z;
+        }
+
+            //         sprite.y = objData.position.y;
+
         //     if (objData) {
         //
         //         // if the object requests a "showThrust" then invoke it in the actor
@@ -314,7 +400,7 @@ export default class SpaaaceRenderer extends Renderer {
         // // Render the stage
         // this.renderer.render(this.stage);
 
-        this.world.rotation.y += 0.005;
+        //this.world.rotation.y += 0.005;
 
         this.renderer3js.render( this.scene, this.camera3js );
     }
@@ -509,6 +595,46 @@ export default class SpaaaceRenderer extends Renderer {
         return {
             x: obj.position.x + 0,//this.camera.x,
             y: obj.position.y + 0 //this.camera.y
+        };
+    }
+
+    gameCoordsToGlobe(obj_x,obj_y) {
+        let worldWidth = this.gameEngine.worldSettings.width;
+        let worldHeight = this.gameEngine.worldSettings.height;
+
+        var x = obj_x - this.world_focus_x;
+        var y = obj_y - this.world_focus_y;
+
+        if (Math.abs(x) > Math.abs(x + worldWidth)) {
+            x += worldWidth;
+        } else if (Math.abs(x) > Math.abs(x - worldWidth)) {
+            x -= worldWidth;
+        }
+        if (Math.abs(y) > Math.abs(y + worldHeight)) {
+            y += worldHeight;
+        } else if (Math.abs(y) > Math.abs(y - worldHeight)) {
+            y -= worldHeight;
+        }
+
+        var radius = this.worldRadius * 1.02; // TODO: should add per-object height offset!
+        var rx = x / this.world_window;
+        var ry = y / this.world_window;
+
+        var visible = true;
+        if (Math.abs(rx) > 1.) { visible = false; }
+        if (Math.abs(ry) > 1.) { visible = false; }
+
+        var angle = Math.atan2(ry,rx);
+        var dist = Math.sqrt(rx*rx + ry*ry);
+        if (dist > 1) { visible = false; }
+
+        var edge_angle = dist * Math.PI / 2;
+
+        return {
+            x: radius * Math.sin(edge_angle) * Math.cos(angle),
+            y: radius * Math.sin(edge_angle) * Math.sin(angle),
+            z: radius * Math.cos(edge_angle),
+            isVisible: visible
         };
     }
 

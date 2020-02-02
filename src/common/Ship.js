@@ -14,6 +14,17 @@ export default class Ship extends DynamicObject {
         if (Renderer) {
             let renderer = Renderer.getInstance();
             let shipActor = new ShipActor(renderer);
+
+            var color = 0x7777aa;
+            if (gameEngine.isOwnedByPlayer(this)) color = 0xaaaa33;
+
+            var geometry = new THREE.SphereGeometry( this.worldRadius, 64, 64 );
+            var surfaceMaterial = new THREE.MeshBasicMaterial( {color: color} );
+            var model = new THREE.Mesh( geometry, surfaceMaterial );
+
+            // renderer.scene.add( model );
+            renderer.models[this.id] = model;
+
             // let sprite = shipActor.sprite;
             // renderer.sprites[this.id] = sprite;
             // sprite.id = this.id;
@@ -47,6 +58,13 @@ export default class Ship extends DynamicObject {
             } else {
                 renderer.removeOffscreenIndicator(this);
             }
+
+            let model = renderer.models[this.id];
+            if (model) {
+                // renderer.scene.delete(model);
+                delete renderer.models[this.id];
+            }
+
             // let sprite = renderer.sprites[this.id];
             // if (sprite) {
             //     if (sprite.actor) {
