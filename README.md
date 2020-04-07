@@ -3,4 +3,4 @@ An online HTML5 multiplayer space shooter built with [Lance](http://lance.gg) ga
 
 [Play now!](https://ggj20.toothmang.com)
 
-A 2THS1M Jam.
+A 2THS1M Jam :)
