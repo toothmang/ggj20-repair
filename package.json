@@ -18,7 +18,7 @@
     "json-loader": "^0.5.4",
     "lance-gg": "^4.0.8",
     "mem": "^4.3.0",
-    "node-sass": "^4.13.1",
+    "node-sass": "^7.0.0",
     "null-loader": "^0.1.1",
     "pixi-particles": "^2.0.0",
     "pixi.js": "^4.8.9",
